@@ -36,6 +36,7 @@ fn valid_hash_types() -> String {
 enum HashType {
     Md5,
     Sha256,
+    Sha512,
 }
 
 fn main() {
@@ -46,6 +47,7 @@ fn main() {
             let hash_type = match contents.hash_type.as_str() {
                 "md5" => HashType::Md5,
                 "sha256" => HashType::Sha256,
+                "sha512" => HashType::Sha512,
                 _ => {
                     eprintln!(
                         "Invalid hash type. Valid hash types are: {}",
@@ -57,6 +59,7 @@ fn main() {
             match hash_type {
                 HashType::Md5 => println!("{}", dev_utils::hash::md5(&contents.content)),
                 HashType::Sha256 => println!("{}", dev_utils::hash::sha256(&contents.content)),
+                HashType::Sha512 => println!("{}", dev_utils::hash::sha512(&contents.content)),
             }
         }
     }
