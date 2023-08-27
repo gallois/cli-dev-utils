@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.3.23", features = ["derive"] }
 clap-stdin = "0.2.1"
+edit = "0.1.4"
 exitcode = "1.1.2"
 md5 = "0.7.0"
 sha2 = "0.10.7"
