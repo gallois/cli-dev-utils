@@ -2,8 +2,9 @@ mod dev_utils;
 
 use clap::{command, Args, Parser, Subcommand};
 use clap_stdin::MaybeStdin;
-use strum::IntoEnumIterator;
-use strum_macros::{AsRefStr, EnumIter, EnumString};
+
+use dev_utils::hash::HashType;
+use dev_utils::url::UrlAction;
 
 use std::process::exit;
 
@@ -18,27 +19,22 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Hash(HashArgs),
+    Url(URLArgs),
 }
 
 #[derive(Args)]
-#[command(about = format!("Hash type to use, {}", valid_hash_types()))]
+#[command(about = format!("Available hash types: {}", dev_utils::enum_variants::<HashType>()))]
 struct HashArgs {
     hash_type: String,
     content: Option<MaybeStdin<String>>,
 }
 
-fn valid_hash_types() -> String {
-    HashType::iter()
-        .map(|hash_type| hash_type.as_ref().to_lowercase())
-        .collect::<Vec<_>>()
-        .join(", ")
-}
-
-#[derive(AsRefStr, EnumString, EnumIter)]
-enum HashType {
-    Md5,
-    Sha256,
-    Sha512,
+#[derive(Args)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<UrlAction>()))]
+struct URLArgs {
+    action: String,
+    url: Option<MaybeStdin<String>>,
+    // TODO Add support for building the url from a struct, like https://docs.rs/serde_qs/latest/serde_qs/
 }
 
 fn main() {
@@ -48,11 +44,6 @@ fn main() {
 
     match args.command {
         Commands::Hash(hash_args) => {
-            if !use_editor && hash_args.content.is_none() {
-                eprintln!("No data provided");
-                exit(exitcode::USAGE);
-            }
-
             let hash_type = match hash_args.hash_type.as_str() {
                 "md5" => HashType::Md5,
                 "sha256" => HashType::Sha256,
@@ -60,11 +51,16 @@ fn main() {
                 _ => {
                     eprintln!(
                         "Invalid hash type. Valid hash types are: {}",
-                        valid_hash_types()
+                        dev_utils::enum_variants::<HashType>()
                     );
                     exit(exitcode::USAGE);
                 }
             };
+
+            if !use_editor && hash_args.content.is_none() {
+                eprintln!("No data provided");
+                exit(exitcode::USAGE);
+            }
 
             let mut content: String = String::from("");
             if let Some(hash_arg_content) = hash_args.content {
@@ -87,6 +83,41 @@ fn main() {
                 HashType::Md5 => println!("{}", dev_utils::hash::md5(content_str)),
                 HashType::Sha256 => println!("{}", dev_utils::hash::sha256(content_str)),
                 HashType::Sha512 => println!("{}", dev_utils::hash::sha512(content_str)),
+            }
+        }
+        Commands::Url(url_encode_args) => {
+            let action = match url_encode_args.action.as_str() {
+                "encode" => UrlAction::Encode,
+                _ => {
+                    eprintln!(
+                        "Invalid action. Valid actions are: {}",
+                        dev_utils::enum_variants::<UrlAction>()
+                    );
+                    exit(exitcode::USAGE);
+                }
+            };
+
+            let mut url: String = String::from("");
+            if let Some(args_url) = url_encode_args.url {
+                url = args_url.as_str().to_string();
+            }
+
+            if args.editor {
+                url = match edit::edit(url) {
+                    Ok(url) => url.trim().to_string(),
+                    Err(e) => {
+                        eprintln!("Error while using editor: {}", e);
+                        exit(exitcode::SOFTWARE);
+                    }
+                };
+            }
+
+            let url_str = url.as_str();
+
+            match action {
+                UrlAction::Encode => {
+                    println!("{}", dev_utils::url::encode(url_str))
+                }
             }
         }
     }

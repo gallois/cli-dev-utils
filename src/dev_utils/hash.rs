@@ -1,5 +1,13 @@
 use md5 as md5crate;
 use sha2::{Digest, Sha256, Sha512};
+use strum_macros::{EnumIter, EnumVariantNames};
+
+#[derive(EnumIter, EnumVariantNames)]
+pub enum HashType {
+    Md5,
+    Sha256,
+    Sha512,
+}
 
 pub fn md5(content: &str) -> String {
     format!("{:x}", md5crate::compute(content))
