@@ -88,6 +88,7 @@ fn main() {
         Commands::Url(url_encode_args) => {
             let action = match url_encode_args.action.as_str() {
                 "encode" => UrlAction::Encode,
+                "decode" => UrlAction::Decode,
                 _ => {
                     eprintln!(
                         "Invalid action. Valid actions are: {}",
@@ -118,6 +119,13 @@ fn main() {
                 UrlAction::Encode => {
                     println!("{}", dev_utils::url::encode(url_str))
                 }
+                UrlAction::Decode => match dev_utils::url::decode(url_str) {
+                    Ok(decoded) => println!("{}", decoded),
+                    Err(e) => {
+                        eprintln!("Error while decoding url: {}", e);
+                        exit(exitcode::DATAERR);
+                    }
+                },
             }
         }
     }
