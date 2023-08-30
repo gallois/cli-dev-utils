@@ -176,9 +176,13 @@ fn main() {
             }
 
             match action {
-                Conversion::Json2Csv => {
-                    println!("{}", dev_utils::convert::json2csv(content.as_str()))
-                }
+                Conversion::Json2Csv => match dev_utils::convert::json2csv(content.as_str()) {
+                    Ok(csv) => println!("{}", csv),
+                    Err(e) => {
+                        eprintln!("Error while converting json to csv: {:#?}", e);
+                        exit(exitcode::DATAERR);
+                    }
+                },
             }
         }
     }

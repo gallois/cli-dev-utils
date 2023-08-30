@@ -143,8 +143,10 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "clap-stdin",
+ "csv",
  "edit",
  "exitcode",
+ "flatten-json-object",
  "json-objects-to-csv",
  "md5",
  "sha2",

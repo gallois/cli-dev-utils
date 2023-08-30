@@ -3,6 +3,8 @@ use std::string::FromUtf8Error;
 use strum_macros::{EnumIter, EnumVariantNames};
 use urlencoding;
 
+use std::str;
+
 #[derive(EnumIter, EnumVariantNames)]
 pub enum UrlAction {
     Encode,
