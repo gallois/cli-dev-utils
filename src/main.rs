@@ -146,6 +146,7 @@ fn main() {
             // TODO refactor this
             let action = match convert_args.action.as_str() {
                 "json2csv" => Conversion::Json2Csv,
+                "csv2tsv" => Conversion::Csv2Tsv,
                 _ => {
                     eprintln!(
                         "Invalid conversion. Valid actions are: {}",
@@ -183,6 +184,9 @@ fn main() {
                         exit(exitcode::DATAERR);
                     }
                 },
+                Conversion::Csv2Tsv => {
+                    println!("{}", dev_utils::convert::csv2tsv(content.as_str()))
+                }
             }
         }
     }

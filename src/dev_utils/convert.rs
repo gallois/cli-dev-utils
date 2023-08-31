@@ -9,6 +9,7 @@ use strum_macros::{EnumIter, EnumVariantNames};
 #[derive(EnumIter, EnumVariantNames)]
 pub enum Conversion {
     Json2Csv,
+    Csv2Tsv,
 }
 
 #[derive(Debug)]
@@ -17,7 +18,7 @@ pub enum ConversionError {
     Utf8Error(Utf8Error),
 }
 
-pub fn json2csv(_json: &str) -> Result<String, ConversionError> {
+pub fn json2csv(data: &str) -> Result<String, ConversionError> {
     let flattener = Flattener::new()
         .set_key_separator(".")
         .set_array_formatting(ArrayFormatting::Surrounded {
@@ -32,7 +33,7 @@ pub fn json2csv(_json: &str) -> Result<String, ConversionError> {
         .delimiter(b',')
         .from_writer(&mut output);
 
-    match Json2Csv::new(flattener).convert_from_reader(_json.as_bytes(), csv_writer) {
+    match Json2Csv::new(flattener).convert_from_reader(data.as_bytes(), csv_writer) {
         Ok(_) => (),
         Err(e) => return Err(ConversionError::Json2Csv(e)),
     }
@@ -43,6 +44,15 @@ pub fn json2csv(_json: &str) -> Result<String, ConversionError> {
     };
 
     result
+}
+
+pub fn csv2tsv(data: &str) -> String {
+    let mut result: String = String::new();
+    for line in data.lines() {
+        result += &line.replace(',', "\t");
+        result += "\n";
+    }
+    result.trim().to_string()
 }
 
 #[cfg(test)]
@@ -56,5 +66,11 @@ mod tests {
             Ok(s) => assert_eq!(s, "a,b,c\n1,2,3\n"),
             Err(e) => panic!("{:#?}", e),
         }
+    }
+
+    #[test]
+    fn test_csv2tsv() {
+        let result = csv2tsv("a,b,c\n1,2,3");
+        assert_eq!(result, "a\tb\tc\n1\t2\t3");
     }
 }
