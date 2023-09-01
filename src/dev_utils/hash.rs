@@ -1,8 +1,9 @@
 use md5 as md5crate;
 use sha2::{Digest, Sha256, Sha512};
-use strum_macros::{EnumIter, EnumVariantNames};
+use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 
-#[derive(EnumIter, EnumVariantNames)]
+#[derive(EnumIter, EnumString, EnumVariantNames)]
+#[strum(serialize_all = "lowercase")]
 pub enum HashType {
     Md5,
     Sha256,

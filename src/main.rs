@@ -8,6 +8,7 @@ use dev_utils::hash::HashType;
 use dev_utils::url::UrlAction;
 
 use std::process::exit;
+use std::str::FromStr;
 
 #[derive(Parser)]
 struct Cli {
@@ -49,15 +50,11 @@ struct ConversionArgs {
 fn main() {
     let args: Cli = Cli::parse();
 
-    let use_editor = args.editor;
-
     match args.command {
         Commands::Hash(hash_args) => {
-            let hash_type = match hash_args.hash_type.as_str() {
-                "md5" => HashType::Md5,
-                "sha256" => HashType::Sha256,
-                "sha512" => HashType::Sha512,
-                _ => {
+            let hash_type = match HashType::from_str(&hash_args.hash_type) {
+                Ok(t) => t,
+                Err(_) => {
                     eprintln!(
                         "Invalid hash type. Valid hash types are: {}",
                         dev_utils::enum_variants::<HashType>()
@@ -66,26 +63,19 @@ fn main() {
                 }
             };
 
-            if !use_editor && hash_args.content.is_none() {
-                eprintln!("No data provided");
-                exit(exitcode::USAGE);
-            }
-
-            let mut content: String = String::new();
-            if let Some(hash_arg_content) = hash_args.content {
-                content = hash_arg_content.as_str().to_string();
-            }
-
-            if args.editor {
-                content = match edit::edit(content) {
-                    Ok(content) => content.trim().to_string(),
-                    Err(e) => {
-                        eprintln!("Error while using editor: {}", e);
-                        exit(exitcode::SOFTWARE);
+            let content = match dev_utils::get_content(hash_args.content, args.editor) {
+                Ok(c) => c,
+                Err(e) => match e {
+                    dev_utils::CliError::NoDataProvided => {
+                        eprintln!("No data provided");
+                        exit(exitcode::USAGE);
                     }
-                };
-            }
-
+                    dev_utils::CliError::EditorError => {
+                        eprintln!("Error while using editor");
+                        exit(exitcode::SOFTWARE)
+                    }
+                },
+            };
             let content_str = content.as_str();
 
             match hash_type {
@@ -95,10 +85,9 @@ fn main() {
             }
         }
         Commands::Url(url_encode_args) => {
-            let action = match url_encode_args.action.as_str() {
-                "encode" => UrlAction::Encode,
-                "decode" => UrlAction::Decode,
-                _ => {
+            let action = match UrlAction::from_str(&url_encode_args.action) {
+                Ok(t) => t,
+                Err(_) => {
                     eprintln!(
                         "Invalid action. Valid actions are: {}",
                         dev_utils::enum_variants::<UrlAction>()
@@ -107,26 +96,19 @@ fn main() {
                 }
             };
 
-            if !use_editor && url_encode_args.url.is_none() {
-                eprintln!("No data provided");
-                exit(exitcode::USAGE);
-            }
-
-            let mut url: String = String::new();
-            if let Some(args_url) = url_encode_args.url {
-                url = args_url.as_str().to_string();
-            }
-
-            if args.editor {
-                url = match edit::edit(url) {
-                    Ok(url) => url.trim().to_string(),
-                    Err(e) => {
-                        eprintln!("Error while using editor: {}", e);
+            let url = match dev_utils::get_content(url_encode_args.url, args.editor) {
+                Ok(c) => c,
+                Err(e) => match e {
+                    dev_utils::CliError::NoDataProvided => {
+                        eprintln!("No data provided");
+                        exit(exitcode::USAGE);
+                    }
+                    dev_utils::CliError::EditorError => {
+                        eprintln!("Error while using editor");
                         exit(exitcode::SOFTWARE);
                     }
-                };
-            }
-
+                },
+            };
             let url_str = url.as_str();
 
             match action {
@@ -143,11 +125,9 @@ fn main() {
             }
         }
         Commands::Convert(convert_args) => {
-            // TODO refactor this
-            let action = match convert_args.action.as_str() {
-                "json2csv" => Conversion::Json2Csv,
-                "csv2tsv" => Conversion::Csv2Tsv,
-                _ => {
+            let action = match Conversion::from_str(&convert_args.action) {
+                Ok(t) => t,
+                Err(_) => {
                     eprintln!(
                         "Invalid conversion. Valid actions are: {}",
                         dev_utils::enum_variants::<Conversion>()
@@ -156,28 +136,23 @@ fn main() {
                 }
             };
 
-            if !use_editor && convert_args.content.is_none() {
-                eprintln!("No data provided");
-                exit(exitcode::USAGE);
-            }
-
-            let mut content: String = String::new();
-            if let Some(convert_arg_content) = convert_args.content {
-                content = convert_arg_content.as_str().to_string();
-            }
-
-            if args.editor {
-                content = match edit::edit(content) {
-                    Ok(content) => content.trim().to_string(),
-                    Err(e) => {
-                        eprintln!("Error while using editor: {}", e);
+            let content = match dev_utils::get_content(convert_args.content, args.editor) {
+                Ok(c) => c,
+                Err(e) => match e {
+                    dev_utils::CliError::NoDataProvided => {
+                        eprintln!("No data provided");
+                        exit(exitcode::USAGE);
+                    }
+                    dev_utils::CliError::EditorError => {
+                        eprintln!("Error while using editor");
                         exit(exitcode::SOFTWARE);
                     }
-                }
-            }
+                },
+            };
+            let content_str = content.as_str();
 
             match action {
-                Conversion::Json2Csv => match dev_utils::convert::json2csv(content.as_str()) {
+                Conversion::Json2Csv => match dev_utils::convert::json2csv(content_str) {
                     Ok(csv) => println!("{}", csv),
                     Err(e) => {
                         eprintln!("Error while converting json to csv: {:#?}", e);
@@ -185,7 +160,7 @@ fn main() {
                     }
                 },
                 Conversion::Csv2Tsv => {
-                    println!("{}", dev_utils::convert::csv2tsv(content.as_str()))
+                    println!("{}", dev_utils::convert::csv2tsv(content_str))
                 }
             }
         }

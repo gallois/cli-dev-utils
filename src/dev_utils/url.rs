@@ -1,11 +1,12 @@
 use std::string::FromUtf8Error;
 
-use strum_macros::{EnumIter, EnumVariantNames};
+use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 use urlencoding;
 
 use std::str;
 
-#[derive(EnumIter, EnumVariantNames)]
+#[derive(EnumIter, EnumString, EnumVariantNames)]
+#[strum(serialize_all = "lowercase")]
 pub enum UrlAction {
     Encode,
     Decode,

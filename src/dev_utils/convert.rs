@@ -4,9 +4,11 @@ use flatten_json_object::Flattener;
 use json_objects_to_csv::{Error, Json2Csv};
 use std::str;
 use std::str::Utf8Error;
+use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
 
-#[derive(EnumIter, EnumVariantNames)]
+#[derive(EnumIter, EnumString, EnumVariantNames)]
+#[strum(serialize_all = "lowercase")]
 pub enum Conversion {
     Json2Csv,
     Csv2Tsv,
