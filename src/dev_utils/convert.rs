@@ -11,12 +11,20 @@ use strum_macros::{EnumIter, EnumVariantNames};
 #[strum(serialize_all = "lowercase")]
 pub enum Conversion {
     Json2Csv,
+    Json2Yaml,
     Csv2Tsv,
+}
+
+#[derive(Debug)]
+pub enum JsonYamlErrors {
+    JsonError(serde_json::Error),
+    YamlError(serde_yaml::Error),
 }
 
 #[derive(Debug)]
 pub enum ConversionError {
     Json2Csv(Error),
+    Json2Yaml(JsonYamlErrors),
     Utf8Error(Utf8Error),
 }
 
@@ -48,6 +56,24 @@ pub fn json2csv(data: &str) -> Result<String, ConversionError> {
     result
 }
 
+pub fn json2yaml(data: &str) -> Result<String, ConversionError> {
+    let json_data: serde_yaml::Value = match serde_json::from_str(data) {
+        Ok(v) => v,
+        Err(e) => return Err(ConversionError::Json2Yaml(JsonYamlErrors::JsonError(e))),
+    };
+
+    let yaml_data = match serde_yaml::from_value::<serde_json::Value>(json_data) {
+        Ok(v) => v,
+        Err(e) => return Err(ConversionError::Json2Yaml(JsonYamlErrors::YamlError(e))),
+    };
+    let yaml_str = match serde_yaml::to_string(&yaml_data) {
+        Ok(v) => v,
+        Err(e) => return Err(ConversionError::Json2Yaml(JsonYamlErrors::YamlError(e))),
+    };
+
+    Ok(yaml_str)
+}
+
 pub fn csv2tsv(data: &str) -> String {
     let mut result: String = String::new();
     for line in data.lines() {
@@ -66,6 +92,36 @@ mod tests {
         let result = json2csv("{\"a\": 1, \"b\": 2, \"c\": 3}");
         match result {
             Ok(s) => assert_eq!(s, "a,b,c\n1,2,3\n"),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_json2yaml() {
+        let result = json2yaml("{\"a\": 1, \"b\": 2, \"c\": 3}");
+        match result {
+            Ok(s) => assert_eq!(s, "a: 1\nb: 2\nc: 3\n"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let data = r#"
+        {
+            "checked": false,
+            "dimensions": {
+                "width": 5,
+                "height": 10
+            },
+            "id": 1,
+            "name": "A green door",
+            "price": 12.5,
+            "tags": [
+                "home",
+                "green"
+            ]
+        }
+        "#;
+        let result = json2yaml(data);
+        match result {
+            Ok(s) => assert_eq!(s, "checked: false\ndimensions:\n  height: 10\n  width: 5\nid: 1\nname: A green door\nprice: 12.5\ntags:\n- home\n- green\n"),
             Err(e) => panic!("{:#?}", e),
         }
     }

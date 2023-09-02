@@ -6,6 +6,7 @@ use clap_stdin::MaybeStdin;
 use dev_utils::convert::Conversion;
 use dev_utils::hash::HashType;
 use dev_utils::url::UrlAction;
+use dev_utils::CliError;
 
 use std::process::exit;
 use std::str::FromStr;
@@ -47,6 +48,19 @@ struct ConversionArgs {
     content: Option<MaybeStdin<String>>,
 }
 
+fn handle_cli_error(e: CliError) {
+    match e {
+        CliError::NoDataProvided => {
+            eprintln!("No data provided");
+            exit(exitcode::USAGE);
+        }
+        CliError::EditorError => {
+            eprintln!("Error while using editor");
+            exit(exitcode::SOFTWARE)
+        }
+    }
+}
+
 fn main() {
     let args: Cli = Cli::parse();
 
@@ -65,16 +79,7 @@ fn main() {
 
             let content = match dev_utils::get_content(hash_args.content, args.editor) {
                 Ok(c) => c,
-                Err(e) => match e {
-                    dev_utils::CliError::NoDataProvided => {
-                        eprintln!("No data provided");
-                        exit(exitcode::USAGE);
-                    }
-                    dev_utils::CliError::EditorError => {
-                        eprintln!("Error while using editor");
-                        exit(exitcode::SOFTWARE)
-                    }
-                },
+                Err(e) => return handle_cli_error(e),
             };
             let content_str = content.as_str();
 
@@ -98,16 +103,7 @@ fn main() {
 
             let url = match dev_utils::get_content(url_encode_args.url, args.editor) {
                 Ok(c) => c,
-                Err(e) => match e {
-                    dev_utils::CliError::NoDataProvided => {
-                        eprintln!("No data provided");
-                        exit(exitcode::USAGE);
-                    }
-                    dev_utils::CliError::EditorError => {
-                        eprintln!("Error while using editor");
-                        exit(exitcode::SOFTWARE);
-                    }
-                },
+                Err(e) => return handle_cli_error(e),
             };
             let url_str = url.as_str();
 
@@ -138,16 +134,7 @@ fn main() {
 
             let content = match dev_utils::get_content(convert_args.content, args.editor) {
                 Ok(c) => c,
-                Err(e) => match e {
-                    dev_utils::CliError::NoDataProvided => {
-                        eprintln!("No data provided");
-                        exit(exitcode::USAGE);
-                    }
-                    dev_utils::CliError::EditorError => {
-                        eprintln!("Error while using editor");
-                        exit(exitcode::SOFTWARE);
-                    }
-                },
+                Err(e) => return handle_cli_error(e),
             };
             let content_str = content.as_str();
 
@@ -156,6 +143,13 @@ fn main() {
                     Ok(csv) => println!("{}", csv),
                     Err(e) => {
                         eprintln!("Error while converting json to csv: {:#?}", e);
+                        exit(exitcode::DATAERR);
+                    }
+                },
+                Conversion::Json2Yaml => match dev_utils::convert::json2yaml(content_str) {
+                    Ok(yaml) => println!("{}", yaml),
+                    Err(e) => {
+                        eprintln!("Error while converting json to yaml: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
                 },
