@@ -1,5 +1,6 @@
 use clap_stdin::MaybeStdin;
 
+pub mod base64;
 pub mod convert;
 pub mod hash;
 pub mod url;

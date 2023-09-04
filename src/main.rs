@@ -3,6 +3,7 @@ mod dev_utils;
 use clap::{command, Args, Parser, Subcommand};
 use clap_stdin::MaybeStdin;
 
+use dev_utils::base64::B64Action;
 use dev_utils::convert::Conversion;
 use dev_utils::hash::HashType;
 use dev_utils::url::UrlAction;
@@ -23,6 +24,7 @@ struct Cli {
 enum Commands {
     Hash(HashArgs),
     Url(URLArgs),
+    Base64(B64Args),
     Convert(ConversionArgs),
 }
 
@@ -39,6 +41,13 @@ struct URLArgs {
     action: String,
     url: Option<MaybeStdin<String>>,
     // TODO Add support for building the url from a struct, like https://docs.rs/serde_qs/latest/serde_qs/
+}
+
+#[derive(Args)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<B64Action>()))]
+struct B64Args {
+    action: String,
+    data: Option<MaybeStdin<String>>,
 }
 
 #[derive(Args)]
@@ -118,6 +127,34 @@ fn main() {
                         exit(exitcode::DATAERR);
                     }
                 },
+            }
+        }
+        Commands::Base64(b64_encode_args) => {
+            let action = match B64Action::from_str(&b64_encode_args.action) {
+                Ok(t) => t,
+                Err(_) => {
+                    eprintln!(
+                        "Invalid action. Valid actions are: {}",
+                        dev_utils::enum_variants::<B64Action>()
+                    );
+                    exit(exitcode::USAGE);
+                }
+            };
+
+            let data = match dev_utils::get_content(b64_encode_args.data, args.editor) {
+                Ok(c) => c,
+                Err(e) => return handle_cli_error(e),
+            };
+            let data_str = data.as_str();
+
+            match action {
+                B64Action::Encode => {
+                    println!("{}", dev_utils::base64::encode(data_str))
+                }
+                B64Action::Decode => {
+                    // println!("{}", dev_utils::base64::decode(data_str))
+                    unimplemented!()
+                }
             }
         }
         Commands::Convert(convert_args) => {
