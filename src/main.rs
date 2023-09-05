@@ -151,10 +151,13 @@ fn main() {
                 B64Action::Encode => {
                     println!("{}", dev_utils::base64::encode(data_str))
                 }
-                B64Action::Decode => {
-                    // println!("{}", dev_utils::base64::decode(data_str))
-                    unimplemented!()
-                }
+                B64Action::Decode => match dev_utils::base64::decode(data_str) {
+                    Ok(decoded) => println!("{}", decoded),
+                    Err(e) => {
+                        eprintln!("Error while decoding base64: {}", e.message);
+                        exit(exitcode::DATAERR);
+                    }
+                },
             }
         }
         Commands::Convert(convert_args) => {

@@ -1,4 +1,4 @@
-use base64::{engine::general_purpose, Engine as _};
+use base64::{engine::general_purpose, DecodeError, Engine as _};
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
@@ -8,8 +8,29 @@ pub enum B64Action {
     Decode,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct B64Error {
+    error: DecodeError,
+    pub message: String,
+}
+
 pub fn encode(data: &str) -> String {
     general_purpose::STANDARD_NO_PAD.encode(data)
+}
+
+pub fn decode(data: &str) -> Result<String, B64Error> {
+    match general_purpose::STANDARD_NO_PAD.decode(data) {
+        Ok(decoded) => {
+            let result = String::from_utf8(decoded)
+                .map_err(|non_utf8| String::from_utf8_lossy(non_utf8.as_bytes()).into_owned())
+                .unwrap();
+            Ok(result)
+        }
+        Err(e) => Err(B64Error {
+            error: e.clone(),
+            message: e.to_string(),
+        }),
+    }
 }
 
 #[cfg(test)]
@@ -22,5 +43,13 @@ mod tests {
             encode("https://theworkoutcalculator.com/"),
             "aHR0cHM6Ly90aGV3b3Jrb3V0Y2FsY3VsYXRvci5jb20v"
         );
+    }
+
+    #[test]
+    fn test_decode() {
+        assert_eq!(
+            decode("aHR0cHM6Ly90aGV3b3Jrb3V0Y2FsY3VsYXRvci5jb20v"),
+            Ok("https://theworkoutcalculator.com/".to_string())
+        )
     }
 }
