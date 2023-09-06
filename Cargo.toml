@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 base64 = "0.21.3"
+chrono = "0.4.28"
 clap = { version = "4.3.23", features = ["derive"] }
 clap-stdin = "0.2.1"
 csv = "1.2.2"

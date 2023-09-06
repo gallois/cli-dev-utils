@@ -5,6 +5,7 @@ use clap_stdin::MaybeStdin;
 
 use dev_utils::base64::B64Action;
 use dev_utils::convert::Conversion;
+use dev_utils::datetime::DateTimeFormat;
 use dev_utils::hash::HashType;
 use dev_utils::url::UrlAction;
 use dev_utils::CliError;
@@ -26,6 +27,7 @@ enum Commands {
     Url(URLArgs),
     Base64(B64Args),
     Convert(ConversionArgs),
+    Datetime(DateTimeArgs),
 }
 
 #[derive(Args)]
@@ -54,6 +56,14 @@ struct B64Args {
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Conversion>()))]
 struct ConversionArgs {
     action: String,
+    content: Option<MaybeStdin<String>>,
+}
+
+#[derive(Args)]
+#[command(about = format!("Available formats: {}", dev_utils::enum_variants::<DateTimeFormat>()))]
+struct DateTimeArgs {
+    from: String,
+    to: String,
     content: Option<MaybeStdin<String>>,
 }
 
@@ -195,6 +205,24 @@ fn main() {
                 },
                 Conversion::Csv2Tsv => {
                     println!("{}", dev_utils::convert::csv2tsv(content_str))
+                }
+            }
+        }
+        Commands::Datetime(date_time_args) => {
+            let content = match dev_utils::get_content(date_time_args.content, args.editor) {
+                Ok(c) => c,
+                Err(e) => return handle_cli_error(e),
+            };
+            let content_str = content.as_str();
+            match dev_utils::datetime::convert(
+                &date_time_args.from,
+                &date_time_args.to,
+                content_str,
+            ) {
+                Ok(result) => println!("{}", result),
+                Err(e) => {
+                    eprintln!("Error while converting datetime: {}", e.message);
+                    exit(exitcode::DATAERR);
                 }
             }
         }
