@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use chrono::{TimeZone, Utc};
+use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
@@ -9,6 +9,7 @@ pub enum DateTimeFormat {
     Iso8601,
     Iso9075,
     Rfc3339,
+    Rfc2822,
     Epoch,
     Unix,
 }
@@ -30,11 +31,18 @@ pub fn convert(from: &str, to: &str, content: &str) -> Result<String, DateTimeEr
                         })
                     }
                 };
-                Utc.timestamp_opt(from_i64, 0).unwrap()
+                match Utc.timestamp_opt(from_i64, 0) {
+                    LocalResult::Single(from_dt) => from_dt.fixed_offset(),
+                    _ => {
+                        return Err(DateTimeError {
+                            message: format!("Cannot parse {} to DateTime", from),
+                        })
+                    }
+                }
             }
             DateTimeFormat::Iso8601 | DateTimeFormat::Rfc3339 => {
                 match content.parse::<chrono::DateTime<Utc>>() {
-                    Ok(from_dt) => from_dt,
+                    Ok(from_dt) => from_dt.fixed_offset(),
                     Err(_) => {
                         return Err(DateTimeError {
                             message: format!("Cannot parse {} to DateTime", from),
@@ -42,6 +50,14 @@ pub fn convert(from: &str, to: &str, content: &str) -> Result<String, DateTimeEr
                     }
                 }
             }
+            DateTimeFormat::Rfc2822 => match DateTime::parse_from_rfc2822(content) {
+                Ok(from_dt) => from_dt,
+                Err(_) => {
+                    return Err(DateTimeError {
+                        message: format!("Cannot parse {} to DateTime", from),
+                    })
+                }
+            },
             _ => {
                 return Err(DateTimeError {
                     message: "`from` not implemented".to_string(),
@@ -61,6 +77,7 @@ pub fn convert(from: &str, to: &str, content: &str) -> Result<String, DateTimeEr
             // ISO8601 and RFC3339 are not exactly the same, but it will do for now
             // https://ijmacd.github.io/rfc3339-iso8601/
             DateTimeFormat::Iso8601 | DateTimeFormat::Rfc3339 => Ok(from_dt.to_rfc3339()),
+            DateTimeFormat::Rfc2822 => Ok(from_dt.to_rfc2822()),
             _ => Err(DateTimeError {
                 message: "`to` not implemented".to_string(),
             }),
@@ -130,5 +147,69 @@ mod tests {
             convert("rfc3339", "unix", "1970-01-01T00:00:01+00:00"),
             Ok("1".to_string())
         );
+    }
+
+    #[test]
+    fn epoch_to_rfc2822() {
+        assert_eq!(
+            convert("epoch", "rfc2822", "1"),
+            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+        );
+    }
+
+    #[test]
+    fn unix_to_rfc2822() {
+        assert_eq!(
+            convert("unix", "rfc2822", "1"),
+            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+        );
+    }
+
+    #[test]
+    fn test_rfc2822_to_epoch() {
+        assert_eq!(
+            convert("rfc2822", "epoch", "Thu, 01 Jan 1970 00:00:01 GMT"),
+            Ok("1".to_string())
+        );
+    }
+
+    #[test]
+    fn test_rfc2822_to_unix() {
+        assert_eq!(
+            convert("rfc2822", "unix", "Thu, 01 Jan 1970 00:00:01 GMT"),
+            Ok("1".to_string())
+        );
+    }
+
+    #[test]
+    fn test_rfc2822_to_iso8601() {
+        assert_eq!(
+            convert("rfc2822", "iso8601", "Thu, 01 Jan 1970 00:00:01 GMT"),
+            Ok("1970-01-01T00:00:01+00:00".to_string())
+        );
+    }
+
+    #[test]
+    fn test_rfc2822_to_rfc3339() {
+        assert_eq!(
+            convert("rfc2822", "rfc3339", "Thu, 01 Jan 1970 00:00:01 GMT"),
+            Ok("1970-01-01T00:00:01+00:00".to_string())
+        );
+    }
+
+    #[test]
+    fn test_iso8601_to_rfc2822() {
+        assert_eq!(
+            convert("iso8601", "rfc2822", "1970-01-01T00:00:01+00:00"),
+            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+        )
+    }
+
+    #[test]
+    fn test_rfc3339_to_rfc2822() {
+        assert_eq!(
+            convert("rfc3339", "rfc2822", "1970-01-01T00:00:01+00:00"),
+            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+        )
     }
 }
