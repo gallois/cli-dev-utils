@@ -13,6 +13,7 @@ pub enum Conversion {
     Json2Csv,
     Json2Yaml,
     Csv2Tsv,
+    String2Hex,
 }
 
 #[derive(Debug)]
@@ -83,6 +84,14 @@ pub fn csv2tsv(data: &str) -> String {
     result.trim().to_string()
 }
 
+pub fn string2hex(data: &str) -> String {
+    let mut result: String = String::new();
+    for byte in data.bytes() {
+        result += &format!("{:02x}", byte);
+    }
+    result.trim().to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,5 +139,11 @@ mod tests {
     fn test_csv2tsv() {
         let result = csv2tsv("a,b,c\n1,2,3");
         assert_eq!(result, "a\tb\tc\n1\t2\t3");
+    }
+
+    #[test]
+    fn test_string2hex() {
+        let result = string2hex("abc");
+        assert_eq!(result, "616263");
     }
 }

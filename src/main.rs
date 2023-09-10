@@ -206,6 +206,9 @@ fn main() {
                 Conversion::Csv2Tsv => {
                     println!("{}", dev_utils::convert::csv2tsv(content_str))
                 }
+                Conversion::String2Hex => {
+                    println!("{}", dev_utils::convert::string2hex(content_str))
+                }
             }
         }
         Commands::Datetime(date_time_args) => {
