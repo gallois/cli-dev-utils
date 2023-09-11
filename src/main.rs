@@ -209,6 +209,13 @@ fn main() {
                 Conversion::String2Hex => {
                     println!("{}", dev_utils::convert::string2hex(content_str))
                 }
+                Conversion::Hex2String => match dev_utils::convert::hex2string(content_str) {
+                    Ok(data) => println!("{}", data),
+                    Err(e) => {
+                        eprintln!("Error while converting hex to string: {:#?}", e);
+                        exit(exitcode::DATAERR);
+                    }
+                },
             }
         }
         Commands::Datetime(date_time_args) => {

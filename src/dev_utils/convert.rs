@@ -14,6 +14,7 @@ pub enum Conversion {
     Json2Yaml,
     Csv2Tsv,
     String2Hex,
+    Hex2String,
 }
 
 #[derive(Debug)]
@@ -27,6 +28,7 @@ pub enum ConversionError {
     Json2Csv(Error),
     Json2Yaml(JsonYamlErrors),
     Utf8Error(Utf8Error),
+    Hex2String(String),
 }
 
 pub fn json2csv(data: &str) -> Result<String, ConversionError> {
@@ -92,6 +94,47 @@ pub fn string2hex(data: &str) -> String {
     result.trim().to_string()
 }
 
+pub fn hex2string(data: &str) -> Result<String, ConversionError> {
+    if data.len() % 2 != 0 {
+        return Err(ConversionError::Hex2String(
+            "Hex string must have an even number of characters".to_string(),
+        ));
+    }
+
+    let mut result: String = String::new();
+    let mut bytes = Vec::new();
+    let mut hex_iter = data.chars();
+
+    while let Some(hex1) = hex_iter.next() {
+        let hex2 = match hex_iter.next() {
+            Some(h) => h,
+            None => {
+                return Err(ConversionError::Hex2String(
+                    "Invalid hex string".to_string(),
+                ))
+            }
+        };
+
+        let byte = match u8::from_str_radix(&format!("{}{}", hex1, hex2), 16) {
+            Ok(b) => b,
+            Err(_) => {
+                return Err(ConversionError::Hex2String(format!(
+                    "Invalid hex character {}{}",
+                    hex1, hex2
+                )))
+            }
+        };
+        bytes.push(byte);
+    }
+
+    result.push_str(
+        &String::from_utf8(bytes)
+            .map_err(|_| ConversionError::Hex2String("Invalid hex string".to_string()))?,
+    );
+
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -145,5 +188,14 @@ mod tests {
     fn test_string2hex() {
         let result = string2hex("abc");
         assert_eq!(result, "616263");
+    }
+
+    #[test]
+    fn test_hex2string() {
+        let result = hex2string("616263");
+        match result {
+            Ok(s) => assert_eq!(s, "abc"),
+            Err(e) => panic!("{:#?}", e),
+        }
     }
 }
