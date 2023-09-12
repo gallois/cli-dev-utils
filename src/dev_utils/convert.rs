@@ -15,6 +15,7 @@ pub enum Conversion {
     Csv2Tsv,
     String2Hex,
     Hex2String,
+    Text2Nato,
 }
 
 #[derive(Debug)]
@@ -135,6 +136,43 @@ pub fn hex2string(data: &str) -> Result<String, ConversionError> {
     Ok(result)
 }
 
+pub fn text2nato(content: &str) -> String {
+    let mut result = String::new();
+    for ch in content.chars() {
+        let ch = match ch {
+            'a' | 'A' => "Alpha".to_string(),
+            'b' | 'B' => "Bravo".to_string(),
+            'c' | 'C' => "Charlie".to_string(),
+            'd' | 'D' => "Delta".to_string(),
+            'e' | 'E' => "Echo".to_string(),
+            'f' | 'F' => "Foxtrot".to_string(),
+            'g' | 'G' => "Golf".to_string(),
+            'h' | 'H' => "Hotel".to_string(),
+            'i' | 'I' => "India".to_string(),
+            'j' | 'J' => "Juliet".to_string(),
+            'k' | 'K' => "Kilo".to_string(),
+            'l' | 'L' => "Lima".to_string(),
+            'm' | 'M' => "Mike".to_string(),
+            'n' | 'N' => "November".to_string(),
+            'o' | 'O' => "Oscar".to_string(),
+            'p' | 'P' => "Papa".to_string(),
+            'q' | 'Q' => "Quebec".to_string(),
+            'r' | 'R' => "Romeo".to_string(),
+            's' | 'S' => "Sierra".to_string(),
+            't' | 'T' => "Tango".to_string(),
+            'u' | 'U' => "Uniform".to_string(),
+            'v' | 'V' => "Victor".to_string(),
+            'w' | 'W' => "Whiskey".to_string(),
+            'x' | 'X' => "X-ray".to_string(),
+            'y' | 'Y' => "Yankee".to_string(),
+            'z' | 'Z' => "Zulu".to_string(),
+            _ => ch.to_string(),
+        };
+        result.push_str(&format!("{} ", &ch));
+    }
+    result.trim().to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -197,5 +235,11 @@ mod tests {
             Ok(s) => assert_eq!(s, "abc"),
             Err(e) => panic!("{:#?}", e),
         }
+    }
+
+    #[test]
+    fn test_text2nato() {
+        let result = text2nato("abc");
+        assert_eq!(result, "Alpha Bravo Charlie");
     }
 }

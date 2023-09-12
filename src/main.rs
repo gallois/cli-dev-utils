@@ -216,6 +216,9 @@ fn main() {
                         exit(exitcode::DATAERR);
                     }
                 },
+                Conversion::Text2Nato => {
+                    println!("{}", dev_utils::convert::text2nato(content_str))
+                }
             }
         }
         Commands::Datetime(date_time_args) => {
