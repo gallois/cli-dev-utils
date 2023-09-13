@@ -4,6 +4,7 @@ pub mod base64;
 pub mod convert;
 pub mod datetime;
 pub mod hash;
+pub mod list;
 pub mod url;
 
 pub enum CliError {

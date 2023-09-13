@@ -7,6 +7,7 @@ use dev_utils::base64::B64Action;
 use dev_utils::convert::Conversion;
 use dev_utils::datetime::DateTimeFormat;
 use dev_utils::hash::HashType;
+use dev_utils::list::ListAction;
 use dev_utils::url::UrlAction;
 use dev_utils::CliError;
 
@@ -28,6 +29,7 @@ enum Commands {
     Base64(B64Args),
     Convert(ConversionArgs),
     Datetime(DateTimeArgs),
+    List(ListArgs),
 }
 
 #[derive(Args)]
@@ -65,6 +67,15 @@ struct DateTimeArgs {
     from: String,
     to: String,
     content: Option<MaybeStdin<String>>,
+}
+
+#[derive(Args)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<ListAction>()))]
+struct ListArgs {
+    action: String,
+    content: Option<MaybeStdin<String>>,
+    #[arg(short, long, default_value = ",")]
+    separator: String,
 }
 
 fn handle_cli_error(e: CliError) {
@@ -236,6 +247,30 @@ fn main() {
                 Err(e) => {
                     eprintln!("Error while converting datetime: {}", e.message);
                     exit(exitcode::DATAERR);
+                }
+            }
+        }
+        Commands::List(list_args) => {
+            let action = match ListAction::from_str(&list_args.action) {
+                Ok(t) => t,
+                Err(_) => {
+                    eprintln!(
+                        "Invalid action. Valid actions are: {}",
+                        dev_utils::enum_variants::<ListAction>()
+                    );
+                    exit(exitcode::USAGE);
+                }
+            };
+            let content = match dev_utils::get_content(list_args.content, args.editor) {
+                Ok(c) => c,
+                Err(e) => return handle_cli_error(e),
+            };
+            let content_str = content.as_str();
+            let separator = list_args.separator.as_str();
+
+            match action {
+                ListAction::Sort => {
+                    println!("{}", dev_utils::list::sort(content_str, separator))
                 }
             }
         }
