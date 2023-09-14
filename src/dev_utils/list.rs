@@ -4,11 +4,21 @@ use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 #[strum(serialize_all = "lowercase")]
 pub enum ListAction {
     Sort,
+    Lowercase,
 }
 
 pub fn sort(content: &str, separator: &str) -> String {
     let mut tokens = content.split(separator).collect::<Vec<&str>>();
     tokens.sort();
+
+    tokens.join(separator)
+}
+
+pub fn lowercase(content: &str, separator: &str) -> String {
+    let tokens = content
+        .split(separator)
+        .map(|t| t.to_lowercase())
+        .collect::<Vec<String>>();
 
     tokens.join(separator)
 }
@@ -27,6 +37,18 @@ mod tests {
         assert_eq!(
             sort("one two three four five", " "),
             "five four one three two"
+        );
+    }
+
+    #[test]
+    fn test_lowercase() {
+        assert_eq!(
+            lowercase("One Two Three Four FIVE", " "),
+            "one two three four five"
+        );
+        assert_eq!(
+            lowercase("One,Two,Three,Four,FIVE", ","),
+            "one,two,three,four,five"
         );
     }
 }

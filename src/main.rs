@@ -272,6 +272,9 @@ fn main() {
                 ListAction::Sort => {
                     println!("{}", dev_utils::list::sort(content_str, separator))
                 }
+                ListAction::Lowercase => {
+                    println!("{}", dev_utils::list::lowercase(content_str, separator))
+                }
             }
         }
     }
