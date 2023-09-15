@@ -275,6 +275,9 @@ fn main() {
                 ListAction::Lowercase => {
                     println!("{}", dev_utils::list::lowercase(content_str, separator))
                 }
+                ListAction::Uppercase => {
+                    println!("{}", dev_utils::list::uppercase(content_str, separator))
+                }
             }
         }
     }
