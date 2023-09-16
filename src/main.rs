@@ -278,6 +278,9 @@ fn main() {
                 ListAction::Uppercase => {
                     println!("{}", dev_utils::list::uppercase(content_str, separator))
                 }
+                ListAction::Capitalise | ListAction::Capitalize => {
+                    println!("{}", dev_utils::list::capitalise(content_str, separator))
+                }
             }
         }
     }
