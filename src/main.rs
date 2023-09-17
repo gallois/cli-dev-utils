@@ -281,6 +281,9 @@ fn main() {
                 ListAction::Capitalise | ListAction::Capitalize => {
                     println!("{}", dev_utils::list::capitalise(content_str, separator))
                 }
+                ListAction::Reverse => {
+                    println!("{}", dev_utils::list::reverse(content_str, separator))
+                }
             }
         }
     }

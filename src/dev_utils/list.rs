@@ -10,6 +10,7 @@ pub enum ListAction {
     Uppercase,
     Capitalise,
     Capitalize,
+    Reverse,
 }
 
 pub fn sort(content: &str, separator: &str) -> String {
@@ -42,6 +43,17 @@ pub fn capitalise(content: &str, separator: &str) -> String {
         .split(separator)
         .map(|t| t.capitalize())
         .collect::<Vec<String>>();
+
+    tokens.join(separator)
+}
+
+pub fn reverse(content: &str, separator: &str) -> String {
+    let mut tokens = content
+        .split(separator)
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
+
+    tokens.reverse();
 
     tokens.join(separator)
 }
@@ -97,5 +109,13 @@ mod tests {
             capitalise("One,Two,Three,Four,FIVE", ","),
             "One,Two,Three,Four,Five"
         );
+    }
+
+    #[test]
+    fn test_reverse() {
+        assert_eq!(
+            reverse("One Two Three Four Five", " "),
+            "Five Four Three Two One"
+        )
     }
 }
