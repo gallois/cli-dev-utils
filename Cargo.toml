@@ -11,6 +11,7 @@ capitalize = "0.1.0"
 chrono = "0.4.28"
 clap = { version = "4.3.23", features = ["derive"] }
 clap-stdin = "0.2.1"
+colors-transform = "0.2.11"
 csv = "1.2.2"
 edit = "0.1.4"
 exitcode = "1.1.2"

@@ -9,6 +9,7 @@ use dev_utils::datetime::DateTimeFormat;
 use dev_utils::hash::HashType;
 use dev_utils::list::ListAction;
 use dev_utils::url::UrlAction;
+use dev_utils::colour::Colour;
 use dev_utils::CliError;
 
 use std::process::exit;
@@ -30,6 +31,8 @@ enum Commands {
     Convert(ConversionArgs),
     Datetime(DateTimeArgs),
     List(ListArgs),
+    #[clap(visible_alias = "color")]
+    Colour(ColourArgs),
 }
 
 #[derive(Args)]
@@ -76,6 +79,12 @@ struct ListArgs {
     content: Option<MaybeStdin<String>>,
     #[arg(short, long, default_value = ",")]
     separator: String,
+}
+#[derive(Args)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Colour>()))]
+struct ColourArgs {
+    action: String,
+    content: Option<MaybeStdin<String>>,
 }
 
 fn handle_cli_error(e: CliError) {
@@ -283,6 +292,33 @@ fn main() {
                 }
                 ListAction::Reverse => {
                     println!("{}", dev_utils::list::reverse(content_str, separator))
+                }
+            }
+        }
+        Commands::Colour(colour_args) => {
+            let action = match Colour::from_str(&colour_args.action) {
+                Ok(t) => t,
+                Err(_) => {
+                    eprintln!(
+                        "Invalid action. Valid actions are: {}",
+                        dev_utils::enum_variants::<Colour>()
+
+                    );
+                    exit(exitcode::USAGE);
+                }
+            };
+            let content = match dev_utils::get_content(colour_args.content, args.editor) {
+                Ok(c) => c,
+                Err(e) => return handle_cli_error(e),
+            };
+            let content_str = content.as_str();
+
+            match action {
+                Colour::Hex2Rgb => match dev_utils::colour::hex2rgb(content_str) {
+                    Ok(rgb) => println!("{}", rgb),
+                    Err(e) => {
+                        eprintln!("Error while converting hex to rgb: {:#?}", e);
+                    }
                 }
             }
         }

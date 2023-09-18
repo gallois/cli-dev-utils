@@ -6,6 +6,7 @@ pub mod datetime;
 pub mod hash;
 pub mod list;
 pub mod url;
+pub mod colour;
 
 pub enum CliError {
     NoDataProvided,
