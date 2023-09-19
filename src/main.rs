@@ -318,6 +318,14 @@ fn main() {
                     Ok(rgb) => println!("{}", rgb),
                     Err(e) => {
                         eprintln!("Error while converting hex to rgb: {:#?}", e);
+                        exit(exitcode::DATAERR);
+                    }
+                }
+                Colour::Hex2Hsl => match dev_utils::colour::hex2hsl(content_str) {
+                    Ok(hsl) => println!("{}", hsl),
+                    Err(e) => {
+                        eprintln!("Error while converting hex to hsl: {:#?}", e);
+                        exit(exitcode::DATAERR);
                     }
                 }
             }
