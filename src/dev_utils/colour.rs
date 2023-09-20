@@ -7,12 +7,14 @@ use colors_transform::{Color, Rgb};
 pub enum Colour {
     Hex2Rgb,
     Hex2Hsl,
+    Rgb2Hex,
 }
 
 #[derive(Debug)]
 pub enum ColourConversionError {
     Hex2Rgb(String),
     Hex2Hsl(String),
+    Rgb2Hex(String),
 }
 
 pub fn hex2rgb(data: &str) -> Result<String, ColourConversionError> {
@@ -33,6 +35,15 @@ pub fn hex2hsl(data: &str) -> Result<String, ColourConversionError> {
     Ok(hsl.to_css_string())
 }
 
+pub fn rgb2hex(data: &str) -> Result<String, ColourConversionError> {
+    let rgb = match data.parse::<Rgb>() {
+        Ok(c) => c,
+        Err(e) => return Err(ColourConversionError::Rgb2Hex(e.message)),
+    };
+
+    Ok(rgb.to_css_hex_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -51,6 +62,15 @@ mod tests {
         let result = hex2hsl("#1EA54C");
         match result {
             Ok(s) => assert_eq!(s, "hsl(140,69%,38%)"),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_rgb2hex() {
+        let result = rgb2hex("rgb(30,165,76)");
+        match result {
+            Ok(s) => assert_eq!(s, "#1ea54c"),
             Err(e) => panic!("{:#?}", e),
         }
     }

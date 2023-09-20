@@ -328,6 +328,14 @@ fn main() {
                         exit(exitcode::DATAERR);
                     }
                 }
+                Colour::Rgb2Hex =>  match dev_utils::colour::rgb2hex(content_str) {
+                    Ok(rgb) => println!("{}", rgb),
+                    Err(e) => {
+                        eprintln!("Error while converting rgb to hex: {:#?}\nFormat should be `rgb(r,g,b)`", e);
+                        exit(exitcode::DATAERR);
+                    }
+                }
+
             }
         }
     }
