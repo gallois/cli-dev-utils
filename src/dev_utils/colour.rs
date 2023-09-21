@@ -1,6 +1,6 @@
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
-use colors_transform::{Color, Rgb};
+use colors_transform::{Color, Hsl, Rgb};
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
@@ -8,6 +8,7 @@ pub enum Colour {
     Hex2Rgb,
     Hex2Hsl,
     Rgb2Hex,
+    Hsl2Hex,
 }
 
 #[derive(Debug)]
@@ -15,6 +16,7 @@ pub enum ColourConversionError {
     Hex2Rgb(String),
     Hex2Hsl(String),
     Rgb2Hex(String),
+    Hsl2Hex(String),
 }
 
 pub fn hex2rgb(data: &str) -> Result<String, ColourConversionError> {
@@ -44,6 +46,15 @@ pub fn rgb2hex(data: &str) -> Result<String, ColourConversionError> {
     Ok(rgb.to_css_hex_string())
 }
 
+pub fn hsl2hex(data: &str) -> Result<String, ColourConversionError> {
+    let hsl = match data.parse::<Hsl>() {
+        Ok(c) => c,
+        Err(e) => return Err(ColourConversionError::Hsl2Hex(e.message)),
+    };
+
+    Ok(hsl.to_rgb().to_css_hex_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -71,6 +82,15 @@ mod tests {
         let result = rgb2hex("rgb(30,165,76)");
         match result {
             Ok(s) => assert_eq!(s, "#1ea54c"),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_hsl2hex() {
+        let result = hsl2hex("hsl(140,69%,38%)");
+        match result {
+            Ok(s) => assert_eq!(s, "#1ea44b"),
             Err(e) => panic!("{:#?}", e),
         }
     }
