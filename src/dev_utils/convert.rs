@@ -6,6 +6,7 @@ use std::str;
 use std::str::Utf8Error;
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
+use slug;
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
@@ -16,6 +17,7 @@ pub enum Conversion {
     String2Hex,
     Hex2String,
     Text2Nato,
+    Slugify,
 }
 
 #[derive(Debug)]
@@ -173,6 +175,10 @@ pub fn text2nato(content: &str) -> String {
     result.trim().to_string()
 }
 
+pub fn slugify(data: &str) -> String {
+    slug::slugify(data)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -241,5 +247,11 @@ mod tests {
     fn test_text2nato() {
         let result = text2nato("abc");
         assert_eq!(result, "Alpha Bravo Charlie");
+    }
+
+    #[test]
+    fn test_slugify() {
+        let result = slugify("Hello World");
+        assert_eq!(result, "hello-world");
     }
 }

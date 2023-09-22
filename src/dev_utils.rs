@@ -3,10 +3,12 @@ use clap_stdin::MaybeStdin;
 pub mod base64;
 pub mod convert;
 pub mod datetime;
+pub mod date;
 pub mod hash;
 pub mod list;
 pub mod url;
 pub mod colour;
+
 
 pub enum CliError {
     NoDataProvided,

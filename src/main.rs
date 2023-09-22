@@ -6,6 +6,7 @@ use clap_stdin::MaybeStdin;
 use dev_utils::base64::B64Action;
 use dev_utils::convert::Conversion;
 use dev_utils::datetime::DateTimeFormat;
+use dev_utils::date::DateAction;
 use dev_utils::hash::HashType;
 use dev_utils::list::ListAction;
 use dev_utils::url::UrlAction;
@@ -30,6 +31,7 @@ enum Commands {
     Base64(B64Args),
     Convert(ConversionArgs),
     Datetime(DateTimeArgs),
+    Date(DateArgs),
     List(ListArgs),
     #[clap(visible_alias = "color")]
     Colour(ColourArgs),
@@ -83,6 +85,13 @@ struct ListArgs {
 #[derive(Args)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Colour>()))]
 struct ColourArgs {
+    action: String,
+    content: Option<MaybeStdin<String>>,
+}
+
+#[derive(Args)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<DateAction>()))]
+struct DateArgs {
     action: String,
     content: Option<MaybeStdin<String>>,
 }
@@ -215,14 +224,14 @@ fn main() {
                         eprintln!("Error while converting json to csv: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                },
+                }
                 Conversion::Json2Yaml => match dev_utils::convert::json2yaml(content_str) {
                     Ok(yaml) => println!("{}", yaml),
                     Err(e) => {
                         eprintln!("Error while converting json to yaml: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                },
+                }
                 Conversion::Csv2Tsv => {
                     println!("{}", dev_utils::convert::csv2tsv(content_str))
                 }
@@ -235,9 +244,12 @@ fn main() {
                         eprintln!("Error while converting hex to string: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                },
+                }
                 Conversion::Text2Nato => {
                     println!("{}", dev_utils::convert::text2nato(content_str))
+                }
+                Conversion::Slugify => {
+                    println!("{}", dev_utils::convert::slugify(content_str))
                 }
             }
         }
@@ -256,6 +268,34 @@ fn main() {
                 Err(e) => {
                     eprintln!("Error while converting datetime: {}", e.message);
                     exit(exitcode::DATAERR);
+                }
+            }
+        }
+        Commands::Date(date_args) => {
+            let action = match DateAction::from_str(&date_args.action) {
+                Ok(t) => t,
+                Err(_) => {
+                    eprintln!(
+                        "Invalid action. Valid actions are: {}",
+                        dev_utils::enum_variants::<DateAction>()
+                    );
+                    exit(exitcode::USAGE);
+                }
+
+            };
+            let content = match dev_utils::get_content(date_args.content, args.editor) {
+                Ok(c) => c,
+                Err(e) => return handle_cli_error(e),
+            };
+            let content_str = content.as_str();
+
+            match action {
+                DateAction::Delta => match dev_utils::date::delta(content_str, -1) {
+                    Ok(result) => println!("{}", result),
+                    Err(e) => {
+                        eprintln!("Error while converting date: {:#?}", e);
+                        exit(exitcode::DATAERR);
+                    }
                 }
             }
         }
