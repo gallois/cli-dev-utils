@@ -1,7 +1,8 @@
+use chrono::LocalResult::Single;
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
-use hourglass::{Deltatime, InputError, Timespec, Timezone, TzError};
 use regex::{Error, Regex};
+use chrono::{Duration, Months, TimeZone};
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
@@ -11,30 +12,22 @@ pub enum DateAction {
 
 #[derive(Debug)]
 pub enum DateError {
-    Tz(TzError),
-    Input(InputError),
+    Input,
     Regex(Error),
     Capture,
     Parse,
-    Format,
+    InvalidUnit
 }
 
-// FIXME replace this whole thing with Chrono
 pub fn delta(content: &str, current_time: i64) -> Result<String, DateError> {
-    let current_tz = match Timezone::local() {
-        Ok(tz) => tz,
-        Err(e) => return Err(DateError::Tz(e)),
-    };
-    let now = if current_time == -1 {
-        current_tz.now()
+    let now = if current_time < 0 {
+        chrono::Local::now()
     } else {
-        let timespec = match Timespec::unix(current_time, 0){
-            Ok(t) => t,
-            Err(e) => return Err(DateError::Input(e)),
-        };
-        timespec.to_datetime(&current_tz)
+        match chrono::Local.timestamp_opt(current_time, 0) {
+            Single(t) => t,
+            _ => return Err(DateError::Input),
+        }
     };
-
     let pattern = match Regex::new("^(?i)(?<sign>-?)(?<value>[0-9]+)(?<unit>[a-z]+)$") {
         Ok(p) => p,
         Err(e) => return Err(DateError::Regex(e)),
@@ -44,27 +37,19 @@ pub fn delta(content: &str, current_time: i64) -> Result<String, DateError> {
         Some(c) => c,
         None => return Err(DateError::Capture),
     };
-
-    let multiplier = match &captures["unit"] {
-        // That's oversimplifying, isn't it?
-        "d" => 1,
-        "m" => 30,
-        "y" => 365,
-        _ => return Err(DateError::Parse),
-    };
     let sign = if captures["sign"].is_empty() { 1 } else { -1 };
     let value = match captures["value"].parse::<i64>() {
         Ok(v) => v,
         Err(_) => return Err(DateError::Parse),
     };
-    let offset = sign * value * multiplier;
 
-    let result = now + Deltatime::days(offset);
+    let offset = match &captures["unit"] {
+        "d" => now + Duration::days(sign * value),
+        "m" => now + Months::new((sign * value) as u32),
+        _ => return Err(DateError::InvalidUnit),
+    };
 
-    match result.format("%Y-%m-%d") {
-        Ok(s) => Ok(s),
-        Err(_) => Err(DateError::Format),
-    }
+    Ok(offset.format("%Y-%m-%d").to_string())
 }
 
 #[cfg(test)]
@@ -75,7 +60,19 @@ mod tests {
     fn test_delta() {
         let result = delta("1d", 0);
         match result {
-            Ok(s) => assert_eq!(s, "1"),
+            Ok(s) => assert_eq!(s, "1970-01-02"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result = delta("1m", 0);
+        match result {
+            Ok(s) => assert_eq!(s, "1970-02-01"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result = delta("-1d", 88000);
+        match result {
+            Ok(s) => assert_eq!(s, "1970-01-01"),
             Err(e) => panic!("{:#?}", e),
         }
     }
