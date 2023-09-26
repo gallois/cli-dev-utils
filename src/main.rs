@@ -4,13 +4,13 @@ use clap::{command, Args, Parser, Subcommand};
 use clap_stdin::MaybeStdin;
 
 use dev_utils::base64::B64Action;
+use dev_utils::colour::Colour;
 use dev_utils::convert::Conversion;
-use dev_utils::datetime::DateTimeFormat;
 use dev_utils::date::DateAction;
+use dev_utils::datetime::DateTimeFormat;
 use dev_utils::hash::HashType;
 use dev_utils::list::ListAction;
 use dev_utils::url::UrlAction;
-use dev_utils::colour::Colour;
 use dev_utils::CliError;
 
 use std::process::exit;
@@ -224,14 +224,14 @@ fn main() {
                         eprintln!("Error while converting json to csv: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
                 Conversion::Json2Yaml => match dev_utils::convert::json2yaml(content_str) {
                     Ok(yaml) => println!("{}", yaml),
                     Err(e) => {
                         eprintln!("Error while converting json to yaml: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
                 Conversion::Csv2Tsv => {
                     println!("{}", dev_utils::convert::csv2tsv(content_str))
                 }
@@ -244,12 +244,21 @@ fn main() {
                         eprintln!("Error while converting hex to string: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
                 Conversion::Text2Nato => {
                     println!("{}", dev_utils::convert::text2nato(content_str))
                 }
                 Conversion::Slugify => {
                     println!("{}", dev_utils::convert::slugify(content_str))
+                }
+                Conversion::Celsius2Fahrenheit | Conversion::C2F => {
+                    match dev_utils::convert::celsius2fahrenheit(content_str) {
+                        Ok(data) => println!("{}", data),
+                        Err(e) => {
+                            eprintln!("Error while converting hex to string: {:#?}", e);
+                            exit(exitcode::DATAERR);
+                        }
+                    }
                 }
             }
         }
@@ -281,7 +290,6 @@ fn main() {
                     );
                     exit(exitcode::USAGE);
                 }
-
             };
             let content = match dev_utils::get_content(date_args.content, args.editor) {
                 Ok(c) => c,
@@ -296,7 +304,7 @@ fn main() {
                         eprintln!("Error while converting date: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
             }
         }
         Commands::List(list_args) => {
@@ -342,7 +350,6 @@ fn main() {
                     eprintln!(
                         "Invalid action. Valid actions are: {}",
                         dev_utils::enum_variants::<Colour>()
-
                     );
                     exit(exitcode::USAGE);
                 }
@@ -360,27 +367,27 @@ fn main() {
                         eprintln!("Error while converting hex to rgb: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
                 Colour::Hex2Hsl => match dev_utils::colour::hex2hsl(content_str) {
                     Ok(hsl) => println!("{}", hsl),
                     Err(e) => {
                         eprintln!("Error while converting hex to hsl: {:#?}", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
                 Colour::Rgb2Hex => match dev_utils::colour::rgb2hex(content_str) {
                     Ok(rgb) => println!("{}", rgb),
                     Err(e) => {
                         eprintln!("Error while converting rgb to hex: {:#?}\nFormat should be `rgb(r,g,b)`", e);
                         exit(exitcode::DATAERR);
                     }
-                }
+                },
                 Colour::Hsl2Hex => match dev_utils::colour::hsl2hex(content_str) {
                     Ok(hsl) => println!("{}", hsl),
                     Err(e) => {
                         eprintln!("Error while converting hsl to hex: {:#?}\nFormat should be `hsl(h,s,l)`", e);
                     }
-                }
+                },
             }
         }
     }

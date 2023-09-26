@@ -2,11 +2,11 @@ use csv;
 use flatten_json_object::ArrayFormatting;
 use flatten_json_object::Flattener;
 use json_objects_to_csv::{Error, Json2Csv};
+use slug;
 use std::str;
 use std::str::Utf8Error;
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
-use slug;
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
@@ -18,6 +18,8 @@ pub enum Conversion {
     Hex2String,
     Text2Nato,
     Slugify,
+    Celsius2Fahrenheit,
+    C2F,
 }
 
 #[derive(Debug)]
@@ -32,6 +34,7 @@ pub enum ConversionError {
     Json2Yaml(JsonYamlErrors),
     Utf8Error(Utf8Error),
     Hex2String(String),
+    TemperatureConversion(String),
 }
 
 pub fn json2csv(data: &str) -> Result<String, ConversionError> {
@@ -179,6 +182,20 @@ pub fn slugify(data: &str) -> String {
     slug::slugify(data)
 }
 
+pub fn celsius2fahrenheit(data: &str) -> Result<f64, ConversionError> {
+    let celsius_temp = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = (celsius_temp * 9.0 / 5.0) + 32.0;
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -253,5 +270,14 @@ mod tests {
     fn test_slugify() {
         let result = slugify("Hello World");
         assert_eq!(result, "hello-world");
+    }
+
+    #[test]
+    fn test_celsius2fahrenheit() {
+        let result = celsius2fahrenheit("0");
+        match result {
+            Ok(s) => assert_eq!(s, 32.0),
+            Err(e) => panic!("{:#?}", e),
+        }
     }
 }

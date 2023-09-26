@@ -1,8 +1,8 @@
 use chrono::LocalResult::Single;
+use chrono::{Duration, Months, TimeZone};
+use regex::{Error, Regex};
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
-use regex::{Error, Regex};
-use chrono::{Duration, Months, TimeZone};
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
@@ -16,7 +16,7 @@ pub enum DateError {
     Regex(Error),
     Capture,
     Parse,
-    InvalidUnit
+    InvalidUnit,
 }
 
 pub fn delta(content: &str, current_time: i64) -> Result<String, DateError> {
@@ -46,6 +46,7 @@ pub fn delta(content: &str, current_time: i64) -> Result<String, DateError> {
     let offset = match &captures["unit"] {
         "d" => now + Duration::days(sign * value),
         "m" => now + Months::new((sign * value) as u32),
+        "y" => now + Months::new((12 * sign * value) as u32),
         _ => return Err(DateError::InvalidUnit),
     };
 
