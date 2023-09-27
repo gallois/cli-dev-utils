@@ -20,6 +20,8 @@ pub enum Conversion {
     Slugify,
     Celsius2Fahrenheit,
     C2F,
+    Fahrenheit2Celsius,
+    F2C,
 }
 
 #[derive(Debug)]
@@ -196,6 +198,20 @@ pub fn celsius2fahrenheit(data: &str) -> Result<f64, ConversionError> {
     Ok(result)
 }
 
+pub fn fahrenheit2celsius(data: &str) -> Result<f64, ConversionError> {
+    let fahrenheit_temp = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = (fahrenheit_temp - 32.0) * 5.0 / 9.0;
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -277,6 +293,15 @@ mod tests {
         let result = celsius2fahrenheit("0");
         match result {
             Ok(s) => assert_eq!(s, 32.0),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_fahrenheit2celsius() {
+        let result = fahrenheit2celsius("32");
+        match result {
+            Ok(s) => assert_eq!(s, 0.0),
             Err(e) => panic!("{:#?}", e),
         }
     }
