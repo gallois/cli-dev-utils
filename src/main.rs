@@ -269,6 +269,15 @@ fn main() {
                         }
                     }
                 }
+                Conversion::Celsius2Kelvin | Conversion::C2K => {
+                    match dev_utils::convert::celsius2kelvin(content_str) {
+                        Ok(data) => println!("{}", data),
+                        Err(e) => {
+                            eprintln!("Error while converting hex to string: {:#?}", e);
+                            exit(exitcode::DATAERR);
+                        }
+                    }
+                }
             }
         }
         Commands::Datetime(date_time_args) => {
