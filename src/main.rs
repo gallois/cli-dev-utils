@@ -278,6 +278,15 @@ fn main() {
                         }
                     }
                 }
+                Conversion::Kelvin2Celsius | Conversion::K2C => {
+                    match dev_utils::convert::kelvin2celsius(content_str) {
+                        Ok(data) => println!("{}", data),
+                        Err(e) => {
+                            eprintln!("Error while converting hex to string: {:#?}", e);
+                            exit(exitcode::DATAERR);
+                        }
+                    }
+                }
             }
         }
         Commands::Datetime(date_time_args) => {

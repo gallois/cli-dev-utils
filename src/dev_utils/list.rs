@@ -1,6 +1,7 @@
-use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 use capitalize;
 use capitalize::Capitalize;
+use strum_macros::{EnumIter, EnumString, EnumVariantNames};
+// TODO https://docs.rs/Inflector/latest/inflector/ might be more flexible
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]

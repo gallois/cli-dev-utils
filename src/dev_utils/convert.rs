@@ -24,6 +24,8 @@ pub enum Conversion {
     F2C,
     Celsius2Kelvin,
     C2K,
+    Kelvin2Celsius,
+    K2C,
 }
 
 #[derive(Debug)]
@@ -228,6 +230,20 @@ pub fn celsius2kelvin(data: &str) -> Result<f64, ConversionError> {
     Ok(result)
 }
 
+pub fn kelvin2celsius(data: &str) -> Result<f64, ConversionError> {
+    let kelvin_temp = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = kelvin_temp - 273.15;
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -327,6 +343,15 @@ mod tests {
         let result = celsius2kelvin("0");
         match result {
             Ok(s) => assert_eq!(s, 273.15),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_kelvin2celsius() {
+        let result = kelvin2celsius("273.15");
+        match result {
+            Ok(s) => assert_eq!(s, 0.0),
             Err(e) => panic!("{:#?}", e),
         }
     }
