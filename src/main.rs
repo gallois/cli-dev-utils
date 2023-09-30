@@ -287,6 +287,15 @@ fn main() {
                         }
                     }
                 }
+                Conversion::Fahrenheit2Kelvin | Conversion::F2K => {
+                    match dev_utils::convert::fahrenheit2kelvin(content_str) {
+                        Ok(data) => println!("{}", data),
+                        Err(e) => {
+                            eprintln!("Error while converting hex to string: {:#?}", e);
+                            exit(exitcode::DATAERR);
+                        }
+                    }
+                }
             }
         }
         Commands::Datetime(date_time_args) => {
