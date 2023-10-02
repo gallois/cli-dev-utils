@@ -296,6 +296,15 @@ fn main() {
                         }
                     }
                 }
+                Conversion::Kelvin2Fahrenheit | Conversion::K2F => {
+                    match dev_utils::convert::kelvin2fahrenheit(content_str) {
+                        Ok(data) => println!("{}", data),
+                        Err(e) => {
+                            eprintln!("Error while converting hex to string: {:#?}", e);
+                            exit(exitcode::DATAERR);
+                        }
+                    }
+                }
             }
         }
         Commands::Datetime(date_time_args) => {
