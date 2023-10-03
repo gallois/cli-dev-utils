@@ -1,18 +1,19 @@
 use clap_stdin::MaybeStdin;
 
 pub mod base64;
+pub mod colour;
+pub mod command_matchers;
 pub mod convert;
-pub mod datetime;
 pub mod date;
+pub mod datetime;
 pub mod hash;
 pub mod list;
 pub mod url;
-pub mod colour;
-
 
 pub enum CliError {
     NoDataProvided,
     EditorError,
+    InvalidArgs(String),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {

@@ -16,15 +16,15 @@ use dev_utils::CliError;
 use std::process::exit;
 use std::str::FromStr;
 
-#[derive(Parser)]
-struct Cli {
+#[derive(Clone, Parser)]
+pub struct Cli {
     #[command(subcommand)]
     command: Commands,
     #[arg(short, long, default_value_t = false)]
     editor: bool,
 }
 
-#[derive(Subcommand)]
+#[derive(Clone, Subcommand)]
 enum Commands {
     Hash(HashArgs),
     Url(URLArgs),
@@ -37,14 +37,14 @@ enum Commands {
     Colour(ColourArgs),
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available hash types: {}", dev_utils::enum_variants::<HashType>()))]
-struct HashArgs {
+pub struct HashArgs {
     hash_type: String,
     content: Option<MaybeStdin<String>>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<UrlAction>()))]
 struct URLArgs {
     action: String,
@@ -52,21 +52,21 @@ struct URLArgs {
     // TODO Add support for building the url from a struct, like https://docs.rs/serde_qs/latest/serde_qs/
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<B64Action>()))]
 struct B64Args {
     action: String,
     data: Option<MaybeStdin<String>>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Conversion>()))]
 struct ConversionArgs {
     action: String,
     content: Option<MaybeStdin<String>>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available formats: {}", dev_utils::enum_variants::<DateTimeFormat>()))]
 struct DateTimeArgs {
     from: String,
@@ -74,7 +74,7 @@ struct DateTimeArgs {
     content: Option<MaybeStdin<String>>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<ListAction>()))]
 struct ListArgs {
     action: String,
@@ -82,14 +82,14 @@ struct ListArgs {
     #[arg(short, long, default_value = ",")]
     separator: String,
 }
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Colour>()))]
 struct ColourArgs {
     action: String,
     content: Option<MaybeStdin<String>>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<DateAction>()))]
 struct DateArgs {
     action: String,
@@ -106,6 +106,10 @@ fn handle_cli_error(e: CliError) {
             eprintln!("Error while using editor");
             exit(exitcode::SOFTWARE)
         }
+        CliError::InvalidArgs(message) => {
+            eprintln!("{}", message);
+            exit(exitcode::USAGE);
+        }
     }
 }
 
@@ -113,28 +117,10 @@ fn main() {
     let args: Cli = Cli::parse();
 
     match args.command {
-        Commands::Hash(hash_args) => {
-            let hash_type = match HashType::from_str(&hash_args.hash_type) {
-                Ok(t) => t,
-                Err(_) => {
-                    eprintln!(
-                        "Invalid hash type. Valid hash types are: {}",
-                        dev_utils::enum_variants::<HashType>()
-                    );
-                    exit(exitcode::USAGE);
-                }
-            };
-
-            let content = match dev_utils::get_content(hash_args.content, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let content_str = content.as_str();
-
-            match hash_type {
-                HashType::Md5 => println!("{}", dev_utils::hash::md5(content_str)),
-                HashType::Sha256 => println!("{}", dev_utils::hash::sha256(content_str)),
-                HashType::Sha512 => println!("{}", dev_utils::hash::sha512(content_str)),
+        Commands::Hash(ref hash_args) => {
+            match dev_utils::command_matchers::hash(hash_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
         Commands::Url(url_encode_args) => {
