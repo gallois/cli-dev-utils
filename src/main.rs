@@ -46,7 +46,7 @@ pub struct HashArgs {
 
 #[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<UrlAction>()))]
-struct URLArgs {
+pub struct URLArgs {
     action: String,
     url: Option<MaybeStdin<String>>,
     // TODO Add support for building the url from a struct, like https://docs.rs/serde_qs/latest/serde_qs/
@@ -110,6 +110,10 @@ fn handle_cli_error(e: CliError) {
             eprintln!("{}", message);
             exit(exitcode::USAGE);
         }
+        CliError::UrlError(message) => {
+            eprintln!("{}", message);
+            exit(exitcode::DATAERR);
+        }
     }
 }
 
@@ -123,35 +127,10 @@ fn main() {
                 Err(e) => handle_cli_error(e),
             }
         }
-        Commands::Url(url_encode_args) => {
-            let action = match UrlAction::from_str(&url_encode_args.action) {
-                Ok(t) => t,
-                Err(_) => {
-                    eprintln!(
-                        "Invalid action. Valid actions are: {}",
-                        dev_utils::enum_variants::<UrlAction>()
-                    );
-                    exit(exitcode::USAGE);
-                }
-            };
-
-            let url = match dev_utils::get_content(url_encode_args.url, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let url_str = url.as_str();
-
-            match action {
-                UrlAction::Encode => {
-                    println!("{}", dev_utils::url::encode(url_str))
-                }
-                UrlAction::Decode => match dev_utils::url::decode(url_str) {
-                    Ok(decoded) => println!("{}", decoded),
-                    Err(e) => {
-                        eprintln!("Error while decoding url: {}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
+        Commands::Url(ref url_encode_args) => {
+            match dev_utils::command_matchers::url(url_encode_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
         Commands::Base64(b64_encode_args) => {

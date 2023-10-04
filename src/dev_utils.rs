@@ -14,6 +14,7 @@ pub enum CliError {
     NoDataProvided,
     EditorError,
     InvalidArgs(String),
+    UrlError(String),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {
