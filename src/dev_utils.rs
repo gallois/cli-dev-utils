@@ -15,6 +15,7 @@ pub enum CliError {
     EditorError,
     InvalidArgs(String),
     UrlError(String),
+    B64Error(base64::B64Error),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {

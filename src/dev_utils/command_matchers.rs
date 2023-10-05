@@ -1,9 +1,10 @@
-use crate::{dev_utils, Cli, HashArgs, URLArgs};
+use crate::{dev_utils, B64Args, Cli, HashArgs, URLArgs};
+use std::str::FromStr;
 
-use super::{hash::HashType, url::UrlAction, CliError};
+use super::{base64::B64Action, hash::HashType, url::UrlAction, CliError};
 
 pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
-    let hash_type = match <HashType as std::str::FromStr>::from_str(&hash_args.hash_type) {
+    let hash_type = match <HashType as FromStr>::from_str(&hash_args.hash_type) {
         Ok(t) => t,
         Err(_) => {
             return Err(CliError::InvalidArgs(format!(
@@ -24,7 +25,7 @@ pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
 }
 
 pub fn url(url_encode_args: URLArgs, cli_args: Cli) -> Result<String, CliError> {
-    let action = match <UrlAction as std::str::FromStr>::from_str(&url_encode_args.action) {
+    let action = match <UrlAction as FromStr>::from_str(&url_encode_args.action) {
         Ok(t) => t,
         Err(_) => {
             return Err(CliError::InvalidArgs(format!(
@@ -45,6 +46,29 @@ pub fn url(url_encode_args: URLArgs, cli_args: Cli) -> Result<String, CliError> 
                 "Error while decoding url: {}",
                 e
             ))),
+        },
+    }
+}
+
+pub fn base64(b64_encode_args: B64Args, cli_args: Cli) -> Result<String, CliError> {
+    let action = match <B64Action as FromStr>::from_str(&b64_encode_args.action) {
+        Ok(t) => t,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid action. Valid actions are: {}",
+                dev_utils::enum_variants::<B64Action>()
+            )));
+        }
+    };
+
+    let data = dev_utils::get_content(b64_encode_args.data, cli_args.editor)?;
+    let data_str = data.as_str();
+
+    match action {
+        B64Action::Encode => Ok(dev_utils::base64::encode(data_str)),
+        B64Action::Decode => match dev_utils::base64::decode(data_str) {
+            Ok(decoded) => Ok(decoded),
+            Err(e) => Err(CliError::B64Error(e)),
         },
     }
 }

@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 use base64::{engine::general_purpose, DecodeError, Engine as _};
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 
@@ -12,6 +14,12 @@ pub enum B64Action {
 pub struct B64Error {
     error: DecodeError,
     pub message: String,
+}
+
+impl Display for B64Error {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Error while decoding base64: {}", self.message)
+    }
 }
 
 pub fn encode(data: &str) -> String {
