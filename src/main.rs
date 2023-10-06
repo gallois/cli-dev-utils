@@ -61,7 +61,7 @@ pub struct B64Args {
 
 #[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Conversion>()))]
-struct ConversionArgs {
+pub struct ConversionArgs {
     action: String,
     content: Option<MaybeStdin<String>>,
 }
@@ -118,6 +118,10 @@ fn handle_cli_error(e: CliError) {
             eprintln!("Error while decoding base64: {}", e);
             exit(exitcode::DATAERR);
         }
+        CliError::ConversionError(e) => {
+            eprintln!("Error while converting: {}", e);
+            exit(exitcode::DATAERR);
+        }
     }
 }
 
@@ -143,112 +147,10 @@ fn main() {
                 Err(e) => handle_cli_error(e),
             }
         }
-        Commands::Convert(convert_args) => {
-            let action = match Conversion::from_str(&convert_args.action) {
-                Ok(t) => t,
-                Err(_) => {
-                    eprintln!(
-                        "Invalid conversion. Valid actions are: {}",
-                        dev_utils::enum_variants::<Conversion>()
-                    );
-                    exit(exitcode::USAGE);
-                }
-            };
-
-            let content = match dev_utils::get_content(convert_args.content, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let content_str = content.as_str();
-
-            match action {
-                Conversion::Json2Csv => match dev_utils::convert::json2csv(content_str) {
-                    Ok(csv) => println!("{}", csv),
-                    Err(e) => {
-                        eprintln!("Error while converting json to csv: {:#?}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
-                Conversion::Json2Yaml => match dev_utils::convert::json2yaml(content_str) {
-                    Ok(yaml) => println!("{}", yaml),
-                    Err(e) => {
-                        eprintln!("Error while converting json to yaml: {:#?}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
-                Conversion::Csv2Tsv => {
-                    println!("{}", dev_utils::convert::csv2tsv(content_str))
-                }
-                Conversion::String2Hex => {
-                    println!("{}", dev_utils::convert::string2hex(content_str))
-                }
-                Conversion::Hex2String => match dev_utils::convert::hex2string(content_str) {
-                    Ok(data) => println!("{}", data),
-                    Err(e) => {
-                        eprintln!("Error while converting hex to string: {:#?}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
-                Conversion::Text2Nato => {
-                    println!("{}", dev_utils::convert::text2nato(content_str))
-                }
-                Conversion::Slugify => {
-                    println!("{}", dev_utils::convert::slugify(content_str))
-                }
-                Conversion::Celsius2Fahrenheit | Conversion::C2F => {
-                    match dev_utils::convert::celsius2fahrenheit(content_str) {
-                        Ok(data) => println!("{}", data),
-                        Err(e) => {
-                            eprintln!("Error while converting hex to string: {:#?}", e);
-                            exit(exitcode::DATAERR);
-                        }
-                    }
-                }
-                Conversion::Fahrenheit2Celsius | Conversion::F2C => {
-                    match dev_utils::convert::fahrenheit2celsius(content_str) {
-                        Ok(data) => println!("{}", data),
-                        Err(e) => {
-                            eprintln!("Error while converting hex to string: {:#?}", e);
-                            exit(exitcode::DATAERR);
-                        }
-                    }
-                }
-                Conversion::Celsius2Kelvin | Conversion::C2K => {
-                    match dev_utils::convert::celsius2kelvin(content_str) {
-                        Ok(data) => println!("{}", data),
-                        Err(e) => {
-                            eprintln!("Error while converting hex to string: {:#?}", e);
-                            exit(exitcode::DATAERR);
-                        }
-                    }
-                }
-                Conversion::Kelvin2Celsius | Conversion::K2C => {
-                    match dev_utils::convert::kelvin2celsius(content_str) {
-                        Ok(data) => println!("{}", data),
-                        Err(e) => {
-                            eprintln!("Error while converting hex to string: {:#?}", e);
-                            exit(exitcode::DATAERR);
-                        }
-                    }
-                }
-                Conversion::Fahrenheit2Kelvin | Conversion::F2K => {
-                    match dev_utils::convert::fahrenheit2kelvin(content_str) {
-                        Ok(data) => println!("{}", data),
-                        Err(e) => {
-                            eprintln!("Error while converting hex to string: {:#?}", e);
-                            exit(exitcode::DATAERR);
-                        }
-                    }
-                }
-                Conversion::Kelvin2Fahrenheit | Conversion::K2F => {
-                    match dev_utils::convert::kelvin2fahrenheit(content_str) {
-                        Ok(data) => println!("{}", data),
-                        Err(e) => {
-                            eprintln!("Error while converting hex to string: {:#?}", e);
-                            exit(exitcode::DATAERR);
-                        }
-                    }
-                }
+        Commands::Convert(ref convert_args) => {
+            match dev_utils::command_matchers::conversion(convert_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
         Commands::Datetime(date_time_args) => {

@@ -3,6 +3,8 @@ use flatten_json_object::ArrayFormatting;
 use flatten_json_object::Flattener;
 use json_objects_to_csv::{Error, Json2Csv};
 use slug;
+use std::fmt::Display;
+use std::fmt::Formatter;
 use std::str;
 use std::str::Utf8Error;
 use strum_macros::EnumString;
@@ -45,6 +47,12 @@ pub enum ConversionError {
     Utf8Error(Utf8Error),
     Hex2String(String),
     TemperatureConversion(String),
+}
+
+impl Display for ConversionError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 pub fn json2csv(data: &str) -> Result<String, ConversionError> {

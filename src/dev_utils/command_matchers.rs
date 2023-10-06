@@ -1,7 +1,7 @@
-use crate::{dev_utils, B64Args, Cli, HashArgs, URLArgs};
+use crate::{dev_utils, B64Args, Cli, ConversionArgs, HashArgs, URLArgs};
 use std::str::FromStr;
 
-use super::{base64::B64Action, hash::HashType, url::UrlAction, CliError};
+use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
 pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
     let hash_type = match <HashType as FromStr>::from_str(&hash_args.hash_type) {
@@ -70,5 +70,74 @@ pub fn base64(b64_encode_args: B64Args, cli_args: Cli) -> Result<String, CliErro
             Ok(decoded) => Ok(decoded),
             Err(e) => Err(CliError::B64Error(e)),
         },
+    }
+}
+
+pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String, CliError> {
+    let action = match Conversion::from_str(&convert_args.action) {
+        Ok(t) => t,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid conversion. Valid actions are: {}",
+                dev_utils::enum_variants::<Conversion>()
+            )));
+        }
+    };
+    let content = dev_utils::get_content(convert_args.content, cli_args.editor)?;
+    let content_str = content.as_str();
+
+    match action {
+        Conversion::Json2Csv => match dev_utils::convert::json2csv(content_str) {
+            Ok(csv) => Ok(csv),
+            Err(e) => Err(CliError::ConversionError(e)),
+        },
+        Conversion::Json2Yaml => match dev_utils::convert::json2yaml(content_str) {
+            Ok(yaml) => Ok(yaml),
+            Err(e) => Err(CliError::ConversionError(e)),
+        },
+        Conversion::Csv2Tsv => Ok(dev_utils::convert::csv2tsv(content_str)),
+        Conversion::String2Hex => Ok(dev_utils::convert::string2hex(content_str)),
+        Conversion::Hex2String => match dev_utils::convert::hex2string(content_str) {
+            Ok(data) => Ok(data),
+            Err(e) => Err(CliError::ConversionError(e)),
+        },
+        Conversion::Text2Nato => Ok(dev_utils::convert::text2nato(content_str)),
+        Conversion::Slugify => Ok(dev_utils::convert::slugify(content_str)),
+        Conversion::Celsius2Fahrenheit | Conversion::C2F => {
+            match dev_utils::convert::celsius2fahrenheit(content_str) {
+                Ok(data) => Ok(data.to_string()),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
+        Conversion::Fahrenheit2Celsius | Conversion::F2C => {
+            match dev_utils::convert::fahrenheit2celsius(content_str) {
+                Ok(data) => Ok(data.to_string()),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
+        Conversion::Celsius2Kelvin | Conversion::C2K => {
+            match dev_utils::convert::celsius2kelvin(content_str) {
+                Ok(data) => Ok(data.to_string()),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
+        Conversion::Kelvin2Celsius | Conversion::K2C => {
+            match dev_utils::convert::kelvin2celsius(content_str) {
+                Ok(data) => Ok(data.to_string()),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
+        Conversion::Fahrenheit2Kelvin | Conversion::F2K => {
+            match dev_utils::convert::fahrenheit2kelvin(content_str) {
+                Ok(data) => Ok(data.to_string()),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
+        Conversion::Kelvin2Fahrenheit | Conversion::K2F => {
+            match dev_utils::convert::kelvin2fahrenheit(content_str) {
+                Ok(data) => Ok(data.to_string()),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
     }
 }
