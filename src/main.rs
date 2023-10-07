@@ -68,7 +68,7 @@ pub struct ConversionArgs {
 
 #[derive(Args, Clone)]
 #[command(about = format!("Available formats: {}", dev_utils::enum_variants::<DateTimeFormat>()))]
-struct DateTimeArgs {
+pub struct DateTimeArgs {
     from: String,
     to: String,
     content: Option<MaybeStdin<String>>,
@@ -122,6 +122,10 @@ fn handle_cli_error(e: CliError) {
             eprintln!("Error while converting: {}", e);
             exit(exitcode::DATAERR);
         }
+        CliError::DateTimeError(e) => {
+            eprintln!("Error while processing date time: {}", e);
+            exit(exitcode::DATAERR);
+        }
     }
 }
 
@@ -153,22 +157,10 @@ fn main() {
                 Err(e) => handle_cli_error(e),
             }
         }
-        Commands::Datetime(date_time_args) => {
-            let content = match dev_utils::get_content(date_time_args.content, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let content_str = content.as_str();
-            match dev_utils::datetime::convert(
-                &date_time_args.from,
-                &date_time_args.to,
-                content_str,
-            ) {
-                Ok(result) => println!("{}", result),
-                Err(e) => {
-                    eprintln!("Error while converting datetime: {}", e.message);
-                    exit(exitcode::DATAERR);
-                }
+        Commands::Datetime(ref date_time_args) => {
+            match dev_utils::command_matchers::date_time(date_time_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
         Commands::Date(date_args) => {

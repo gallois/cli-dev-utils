@@ -1,4 +1,4 @@
-use crate::{dev_utils, B64Args, Cli, ConversionArgs, HashArgs, URLArgs};
+use crate::{dev_utils, B64Args, Cli, ConversionArgs, DateTimeArgs, HashArgs, URLArgs};
 use std::str::FromStr;
 
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
@@ -26,7 +26,7 @@ pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
 
 pub fn url(url_encode_args: URLArgs, cli_args: Cli) -> Result<String, CliError> {
     let action = match <UrlAction as FromStr>::from_str(&url_encode_args.action) {
-        Ok(t) => t,
+        Ok(a) => a,
         Err(_) => {
             return Err(CliError::InvalidArgs(format!(
                 "Invalid action. Valid actions are: {}",
@@ -52,7 +52,7 @@ pub fn url(url_encode_args: URLArgs, cli_args: Cli) -> Result<String, CliError> 
 
 pub fn base64(b64_encode_args: B64Args, cli_args: Cli) -> Result<String, CliError> {
     let action = match <B64Action as FromStr>::from_str(&b64_encode_args.action) {
-        Ok(t) => t,
+        Ok(a) => a,
         Err(_) => {
             return Err(CliError::InvalidArgs(format!(
                 "Invalid action. Valid actions are: {}",
@@ -75,7 +75,7 @@ pub fn base64(b64_encode_args: B64Args, cli_args: Cli) -> Result<String, CliErro
 
 pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String, CliError> {
     let action = match Conversion::from_str(&convert_args.action) {
-        Ok(t) => t,
+        Ok(a) => a,
         Err(_) => {
             return Err(CliError::InvalidArgs(format!(
                 "Invalid conversion. Valid actions are: {}",
@@ -139,5 +139,14 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
                 Err(e) => Err(CliError::ConversionError(e)),
             }
         }
+    }
+}
+
+pub fn date_time(date_time_args: DateTimeArgs, args: Cli) -> Result<String, CliError> {
+    let content = dev_utils::get_content(date_time_args.content, args.editor)?;
+    let content_str = content.as_str();
+    match dev_utils::datetime::convert(&date_time_args.from, &date_time_args.to, content_str) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(CliError::DateTimeError(e)),
     }
 }

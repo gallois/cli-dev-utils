@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
 
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
@@ -17,6 +20,12 @@ pub enum DateTimeFormat {
 #[derive(Debug, PartialEq)]
 pub struct DateTimeError {
     pub message: String,
+}
+
+impl Display for DateTimeError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message)
+    }
 }
 
 pub fn convert(from: &str, to: &str, content: &str) -> Result<String, DateTimeError> {
