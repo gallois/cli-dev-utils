@@ -1,4 +1,5 @@
 use clap_stdin::MaybeStdin;
+use crate::dev_utils::date::DateError;
 
 use self::datetime::DateTimeError;
 
@@ -20,6 +21,7 @@ pub enum CliError {
     B64Error(base64::B64Error),
     ConversionError(convert::ConversionError),
     DateTimeError(DateTimeError),
+    DateError(DateError),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {

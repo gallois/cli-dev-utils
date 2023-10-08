@@ -91,7 +91,7 @@ struct ColourArgs {
 
 #[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<DateAction>()))]
-struct DateArgs {
+pub struct DateArgs {
     action: String,
     content: Option<MaybeStdin<String>>,
 }
@@ -124,6 +124,10 @@ fn handle_cli_error(e: CliError) {
         }
         CliError::DateTimeError(e) => {
             eprintln!("Error while processing date time: {}", e);
+            exit(exitcode::DATAERR);
+        }
+        CliError::DateError(e) => {
+            eprintln!("Error while processing date: {}", e);
             exit(exitcode::DATAERR);
         }
     }
@@ -163,31 +167,10 @@ fn main() {
                 Err(e) => handle_cli_error(e),
             }
         }
-        Commands::Date(date_args) => {
-            let action = match DateAction::from_str(&date_args.action) {
-                Ok(t) => t,
-                Err(_) => {
-                    eprintln!(
-                        "Invalid action. Valid actions are: {}",
-                        dev_utils::enum_variants::<DateAction>()
-                    );
-                    exit(exitcode::USAGE);
-                }
-            };
-            let content = match dev_utils::get_content(date_args.content, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let content_str = content.as_str();
-
-            match action {
-                DateAction::Delta => match dev_utils::date::delta(content_str, -1) {
-                    Ok(result) => println!("{}", result),
-                    Err(e) => {
-                        eprintln!("Error while converting date: {:#?}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
+        Commands::Date(ref date_args) => {
+            match dev_utils::command_matchers::date(date_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
         Commands::List(list_args) => {

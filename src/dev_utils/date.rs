@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use chrono::LocalResult::Single;
 use chrono::{Duration, Months, TimeZone};
 use regex::{Error, Regex};
@@ -17,6 +18,12 @@ pub enum DateError {
     Capture,
     Parse,
     InvalidUnit,
+}
+
+impl Display for DateError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 pub fn delta(content: &str, current_time: i64) -> Result<String, DateError> {

@@ -1,5 +1,6 @@
-use crate::{dev_utils, B64Args, Cli, ConversionArgs, DateTimeArgs, HashArgs, URLArgs};
+use crate::{dev_utils, B64Args, Cli, ConversionArgs, DateTimeArgs, HashArgs, URLArgs, DateArgs};
 use std::str::FromStr;
+use crate::dev_utils::date::DateAction;
 
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
@@ -148,5 +149,26 @@ pub fn date_time(date_time_args: DateTimeArgs, args: Cli) -> Result<String, CliE
     match dev_utils::datetime::convert(&date_time_args.from, &date_time_args.to, content_str) {
         Ok(result) => Ok(result),
         Err(e) => Err(CliError::DateTimeError(e)),
+    }
+}
+
+pub fn date(date_args: DateArgs, cli_args: Cli) -> Result<String, CliError> {
+    let action = match DateAction::from_str(&date_args.action) {
+        Ok(a) => a,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid action. Valid actions are: {}",
+                dev_utils::enum_variants::<DateAction>()
+            )));
+        }
+    };
+    let content = dev_utils::get_content(date_args.content, cli_args.editor)?;
+    let content_str = content.as_str();
+
+    match action {
+        DateAction::Delta => match dev_utils::date::delta(content_str, -1) {
+            Ok(result) => Ok(result),
+            Err(e) => return Err(CliError::DateError(e)),
+        },
     }
 }
