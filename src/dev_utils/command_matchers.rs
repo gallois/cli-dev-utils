@@ -1,7 +1,10 @@
-use crate::{dev_utils, B64Args, Cli, ConversionArgs, DateTimeArgs, HashArgs, URLArgs, DateArgs};
-use std::str::FromStr;
 use crate::dev_utils::date::DateAction;
+use crate::{
+    dev_utils, B64Args, Cli, ConversionArgs, DateArgs, DateTimeArgs, HashArgs, ListArgs, URLArgs,
+};
+use std::str::FromStr;
 
+use super::list::ListAction;
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
 pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
@@ -168,7 +171,32 @@ pub fn date(date_args: DateArgs, cli_args: Cli) -> Result<String, CliError> {
     match action {
         DateAction::Delta => match dev_utils::date::delta(content_str, -1) {
             Ok(result) => Ok(result),
-            Err(e) => return Err(CliError::DateError(e)),
+            Err(e) => Err(CliError::DateError(e)),
         },
+    }
+}
+
+pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
+    let action = match ListAction::from_str(&list_args.action) {
+        Ok(a) => a,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid action. Valid actions are: {}",
+                dev_utils::enum_variants::<ListAction>()
+            )));
+        }
+    };
+    let content = dev_utils::get_content(list_args.content, cli_args.editor)?;
+    let content_str = content.as_str();
+    let separator = list_args.separator.as_str();
+
+    match action {
+        ListAction::Sort => Ok(dev_utils::list::sort(content_str, separator)),
+        ListAction::Lowercase => Ok(dev_utils::list::lowercase(content_str, separator)),
+        ListAction::Uppercase => Ok(dev_utils::list::uppercase(content_str, separator)),
+        ListAction::Capitalise | ListAction::Capitalize => {
+            Ok(dev_utils::list::capitalise(content_str, separator))
+        }
+        ListAction::Reverse => Ok(dev_utils::list::reverse(content_str, separator)),
     }
 }

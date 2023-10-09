@@ -173,40 +173,10 @@ fn main() {
                 Err(e) => handle_cli_error(e),
             }
         }
-        Commands::List(list_args) => {
-            let action = match ListAction::from_str(&list_args.action) {
-                Ok(t) => t,
-                Err(_) => {
-                    eprintln!(
-                        "Invalid action. Valid actions are: {}",
-                        dev_utils::enum_variants::<ListAction>()
-                    );
-                    exit(exitcode::USAGE);
-                }
-            };
-            let content = match dev_utils::get_content(list_args.content, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let content_str = content.as_str();
-            let separator = list_args.separator.as_str();
-
-            match action {
-                ListAction::Sort => {
-                    println!("{}", dev_utils::list::sort(content_str, separator))
-                }
-                ListAction::Lowercase => {
-                    println!("{}", dev_utils::list::lowercase(content_str, separator))
-                }
-                ListAction::Uppercase => {
-                    println!("{}", dev_utils::list::uppercase(content_str, separator))
-                }
-                ListAction::Capitalise | ListAction::Capitalize => {
-                    println!("{}", dev_utils::list::capitalise(content_str, separator))
-                }
-                ListAction::Reverse => {
-                    println!("{}", dev_utils::list::reverse(content_str, separator))
-                }
+        Commands::List(ref list_args) => {
+            match dev_utils::command_matchers::list(list_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
         Commands::Colour(colour_args) => {
