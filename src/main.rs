@@ -14,7 +14,6 @@ use dev_utils::url::UrlAction;
 use dev_utils::CliError;
 
 use std::process::exit;
-use std::str::FromStr;
 
 #[derive(Clone, Parser)]
 pub struct Cli {
@@ -130,6 +129,10 @@ fn handle_cli_error(e: CliError) {
             eprintln!("Error while processing date: {}", e);
             exit(exitcode::DATAERR);
         }
+        CliError::ColourError(e) => {
+            eprintln!("Error while processing colour: {}", e);
+            exit(exitcode::DATAERR);
+        }
     }
 }
 
@@ -179,51 +182,10 @@ fn main() {
                 Err(e) => handle_cli_error(e),
             }
         }
-        Commands::Colour(colour_args) => {
-            let action = match Colour::from_str(&colour_args.action) {
-                Ok(t) => t,
-                Err(_) => {
-                    eprintln!(
-                        "Invalid action. Valid actions are: {}",
-                        dev_utils::enum_variants::<Colour>()
-                    );
-                    exit(exitcode::USAGE);
-                }
-            };
-            let content = match dev_utils::get_content(colour_args.content, args.editor) {
-                Ok(c) => c,
-                Err(e) => return handle_cli_error(e),
-            };
-            let content_str = content.as_str();
-
-            match action {
-                Colour::Hex2Rgb => match dev_utils::colour::hex2rgb(content_str) {
-                    Ok(rgb) => println!("{}", rgb),
-                    Err(e) => {
-                        eprintln!("Error while converting hex to rgb: {:#?}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
-                Colour::Hex2Hsl => match dev_utils::colour::hex2hsl(content_str) {
-                    Ok(hsl) => println!("{}", hsl),
-                    Err(e) => {
-                        eprintln!("Error while converting hex to hsl: {:#?}", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
-                Colour::Rgb2Hex => match dev_utils::colour::rgb2hex(content_str) {
-                    Ok(rgb) => println!("{}", rgb),
-                    Err(e) => {
-                        eprintln!("Error while converting rgb to hex: {:#?}\nFormat should be `rgb(r,g,b)`", e);
-                        exit(exitcode::DATAERR);
-                    }
-                },
-                Colour::Hsl2Hex => match dev_utils::colour::hsl2hex(content_str) {
-                    Ok(hsl) => println!("{}", hsl),
-                    Err(e) => {
-                        eprintln!("Error while converting hsl to hex: {:#?}\nFormat should be `hsl(h,s,l)`", e);
-                    }
-                },
+        Commands::Colour(ref colour_args) => {
+            match dev_utils::command_matchers::colour(colour_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
             }
         }
     }

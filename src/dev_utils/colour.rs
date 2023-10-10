@@ -1,6 +1,6 @@
+use colors_transform::{Color, Hsl, Rgb};
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
-use colors_transform::{Color, Hsl, Rgb};
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]

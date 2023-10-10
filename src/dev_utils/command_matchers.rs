@@ -1,9 +1,11 @@
 use crate::dev_utils::date::DateAction;
 use crate::{
-    dev_utils, B64Args, Cli, ConversionArgs, DateArgs, DateTimeArgs, HashArgs, ListArgs, URLArgs,
+    dev_utils, B64Args, Cli, ColourArgs, ConversionArgs, DateArgs, DateTimeArgs, HashArgs,
+    ListArgs, URLArgs,
 };
 use std::str::FromStr;
 
+use super::colour::Colour;
 use super::list::ListAction;
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
@@ -198,5 +200,50 @@ pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
             Ok(dev_utils::list::capitalise(content_str, separator))
         }
         ListAction::Reverse => Ok(dev_utils::list::reverse(content_str, separator)),
+    }
+}
+
+pub fn colour(colour_args: ColourArgs, cli_args: Cli) -> Result<String, CliError> {
+    let action = match Colour::from_str(&colour_args.action) {
+        Ok(a) => a,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid action. Valid actions are: {}",
+                dev_utils::enum_variants::<Colour>()
+            )));
+        }
+    };
+    let content = dev_utils::get_content(colour_args.content, cli_args.editor)?;
+    let content_str = content.as_str();
+
+    match action {
+        Colour::Hex2Rgb => match dev_utils::colour::hex2rgb(content_str) {
+            Ok(rgb) => Ok(rgb),
+            Err(e) => Err(CliError::ColourError(format!(
+                "Error while converting hex to rgb: {:#?}",
+                e,
+            ))),
+        },
+        Colour::Hex2Hsl => match dev_utils::colour::hex2hsl(content_str) {
+            Ok(hsl) => Ok(hsl),
+            Err(e) => Err(CliError::ColourError(format!(
+                "Error while converting hex to hsl: {:#?}",
+                e
+            ))),
+        },
+        Colour::Rgb2Hex => match dev_utils::colour::rgb2hex(content_str) {
+            Ok(rgb) => Ok(rgb),
+            Err(e) => Err(CliError::ColourError(format!(
+                "Error while converting rgb to hex: {:#?}\nFormat should be `rgb(r,g,b)`",
+                e
+            ))),
+        },
+        Colour::Hsl2Hex => match dev_utils::colour::hsl2hex(content_str) {
+            Ok(hsl) => Ok(hsl),
+            Err(e) => Err(CliError::ColourError(format!(
+                "Error while converting hsl to hex: {:#?}\nFormat should be `hsl(h,s,l)`",
+                e
+            ))),
+        },
     }
 }
