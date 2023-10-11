@@ -8,6 +8,7 @@ use dev_utils::colour::Colour;
 use dev_utils::convert::Conversion;
 use dev_utils::date::DateAction;
 use dev_utils::datetime::DateTimeFormat;
+use dev_utils::generate::GenerateSubcommands;
 use dev_utils::hash::HashType;
 use dev_utils::list::ListAction;
 use dev_utils::url::UrlAction;
@@ -34,6 +35,7 @@ enum Commands {
     List(ListArgs),
     #[clap(visible_alias = "color")]
     Colour(ColourArgs),
+    Generate(GenerateArgs),
 }
 
 #[derive(Args, Clone)]
@@ -94,6 +96,12 @@ pub struct DateArgs {
     action: String,
     content: Option<MaybeStdin<String>>,
 }
+#[derive(Args, Clone)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<GenerateSubcommands>()))]
+pub struct GenerateArgs {
+    #[command(subcommand)]
+    type_: GenerateSubcommands,
+}
 
 fn handle_cli_error(e: CliError) {
     match e {
@@ -131,6 +139,10 @@ fn handle_cli_error(e: CliError) {
         }
         CliError::ColourError(e) => {
             eprintln!("Error while processing colour: {}", e);
+            exit(exitcode::DATAERR);
+        }
+        CliError::GenerateError(e) => {
+            eprintln!("Error while generating: {}", e);
             exit(exitcode::DATAERR);
         }
     }
@@ -184,6 +196,12 @@ fn main() {
         }
         Commands::Colour(ref colour_args) => {
             match dev_utils::command_matchers::colour(colour_args.clone(), args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
+            }
+        }
+        Commands::Generate(ref generate_args) => {
+            match dev_utils::command_matchers::generate(generate_args.clone()) {
                 Ok(s) => println!("{}", s),
                 Err(e) => handle_cli_error(e),
             }

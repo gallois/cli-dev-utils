@@ -6,6 +6,7 @@ pub mod command_matchers;
 pub mod convert;
 pub mod date;
 pub mod datetime;
+pub mod generate;
 pub mod hash;
 pub mod list;
 pub mod url;
@@ -20,6 +21,7 @@ pub enum CliError {
     DateTimeError(self::datetime::DateTimeError),
     DateError(date::DateError),
     ColourError(String),
+    GenerateError(generate::GenerateError),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {

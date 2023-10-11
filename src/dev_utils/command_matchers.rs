@@ -1,11 +1,12 @@
 use crate::dev_utils::date::DateAction;
 use crate::{
-    dev_utils, B64Args, Cli, ColourArgs, ConversionArgs, DateArgs, DateTimeArgs, HashArgs,
-    ListArgs, URLArgs,
+    dev_utils, B64Args, Cli, ColourArgs, ConversionArgs, DateArgs, DateTimeArgs, GenerateArgs,
+    HashArgs, ListArgs, URLArgs,
 };
 use std::str::FromStr;
 
 use super::colour::Colour;
+use super::generate::GenerateSubcommands;
 use super::list::ListAction;
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
@@ -244,6 +245,27 @@ pub fn colour(colour_args: ColourArgs, cli_args: Cli) -> Result<String, CliError
                 "Error while converting hsl to hex: {:#?}\nFormat should be `hsl(h,s,l)`",
                 e
             ))),
+        },
+    }
+}
+
+pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
+    match generate_args.type_ {
+        GenerateSubcommands::Token {
+            length,
+            no_uppercase,
+            no_lowercase,
+            no_numbers,
+            no_symbols,
+        } => match dev_utils::generate::token(
+            length,
+            no_uppercase,
+            no_lowercase,
+            no_numbers,
+            no_symbols,
+        ) {
+            Ok(token) => Ok(token),
+            Err(e) => Err(CliError::GenerateError(e)),
         },
     }
 }
