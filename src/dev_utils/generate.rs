@@ -4,6 +4,8 @@ use clap::{arg, Subcommand};
 use rand::Rng;
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 
+use uuid::Uuid;
+
 #[derive(Clone, EnumIter, EnumString, EnumVariantNames, Subcommand)]
 #[strum(serialize_all = "lowercase")]
 pub enum GenerateSubcommands {
@@ -18,11 +20,15 @@ pub enum GenerateSubcommands {
         #[arg(short = 's', long)]
         no_symbols: bool,
     },
+    Uuid {
+        version: Option<String>,
+    },
 }
 
 #[derive(Debug)]
 pub enum GenerateError {
-    TokenGenerate(String),
+    Token(String),
+    Uuid(String),
 }
 
 impl Display for GenerateError {
@@ -39,9 +45,7 @@ pub fn token(
     no_symbols: bool,
 ) -> Result<String, GenerateError> {
     if no_uppercase && no_lowercase && no_numbers && no_symbols {
-        return Err(GenerateError::TokenGenerate(
-            "Nothing to generate".to_string(),
-        ));
+        return Err(GenerateError::Token("Nothing to generate".to_string()));
     }
 
     let mut uppercase_set = vec![
@@ -81,33 +85,67 @@ pub fn token(
     Ok(token)
 }
 
+pub fn uuid(version: Option<String>) -> Result<String, GenerateError> {
+    let version = match version {
+        Some(version) => match version.as_str() {
+            "v4" | "4" => 4,
+            "v1" | "1" | "v2" | "2" | "v3" | "3" | "v5" | "5" | "v6" | "6" | "v7" | "7" | "v8"
+            | "8" => {
+                return Err(GenerateError::Uuid(format!(
+                    "Version {} not implemented",
+                    version
+                )));
+            }
+            _ => return Err(GenerateError::Uuid("Invalid value for version".to_string())),
+        },
+        None => 4,
+    };
+
+    match version {
+        4 => Ok(Uuid::new_v4().to_string()),
+        _ => Err(GenerateError::Uuid(format!(
+            "Version {} not implemented",
+            version
+        ))),
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use uuid::{Uuid, Version};
+
     use super::*;
 
     #[test]
     fn test_token() {
-        match token(10, false, false, false, false) {
+        match token(10, true, true, true, true) {
             Ok(s) => panic!("{:#?}", s),
             Err(e) => match e {
-                GenerateError::TokenGenerate(s) => {
+                GenerateError::Token(s) => {
                     assert_eq!(s, "Nothing to generate");
                 }
+                _ => panic!("{:#?}", e),
             },
         }
-        match token(10, true, false, false, false) {
+        match token(10, false, true, true, true) {
             Ok(s) => assert_eq!(s.len(), 10),
             Err(e) => panic!("{:#?}", e),
         }
 
-        match token(10, false, true, false, false) {
+        match token(10, true, false, true, true) {
             Ok(s) => assert!(s.chars().all(|c| c.is_ascii_lowercase())),
             Err(e) => panic!("{:#?}", e),
         }
 
-        match token(10, true, false, false, false) {
+        match token(10, false, true, true, true) {
             Ok(s) => assert!(s.chars().all(|c| c.is_ascii_uppercase())),
             Err(e) => panic!("{:#?}", e),
         }
+    }
+
+    #[test]
+    fn test_uuid() {
+        let u = Uuid::new_v4();
+        assert_eq!(Some(Version::Random), u.get_version());
     }
 }

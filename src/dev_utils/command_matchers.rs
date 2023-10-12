@@ -267,5 +267,9 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
             Ok(token) => Ok(token),
             Err(e) => Err(CliError::GenerateError(e)),
         },
+        GenerateSubcommands::Uuid { version } => match dev_utils::generate::uuid(version) {
+            Ok(uuid) => Ok(uuid),
+            Err(e) => Err(CliError::GenerateError(e)),
+        },
     }
 }
