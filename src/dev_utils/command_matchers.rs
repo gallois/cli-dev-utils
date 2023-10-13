@@ -6,7 +6,7 @@ use crate::{
 use std::str::FromStr;
 
 use super::colour::Colour;
-use super::generate::GenerateSubcommands;
+use super::generate::{GenerateParams, GenerateSubcommands};
 use super::list::ListAction;
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
@@ -267,9 +267,21 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
             Ok(token) => Ok(token),
             Err(e) => Err(CliError::GenerateError(e)),
         },
-        GenerateSubcommands::Uuid { version } => match dev_utils::generate::uuid(version) {
-            Ok(uuid) => Ok(uuid),
-            Err(e) => Err(CliError::GenerateError(e)),
-        },
+        GenerateSubcommands::Uuid {
+            version,
+            namespace,
+            name,
+        } => {
+            let params = GenerateParams {
+                version,
+                namespace,
+                name,
+            };
+
+            match dev_utils::generate::uuid(params) {
+                Ok(uuid) => Ok(uuid),
+                Err(e) => Err(CliError::GenerateError(e)),
+            }
+        }
     }
 }

@@ -22,7 +22,15 @@ pub enum GenerateSubcommands {
     },
     Uuid {
         version: Option<String>,
+        namespace: Option<String>,
+        name: Option<String>,
     },
+}
+
+pub struct GenerateParams {
+    pub version: Option<String>,
+    pub namespace: Option<String>,
+    pub name: Option<String>,
 }
 
 #[derive(Debug)]
@@ -85,12 +93,13 @@ pub fn token(
     Ok(token)
 }
 
-pub fn uuid(version: Option<String>) -> Result<String, GenerateError> {
-    let version = match version {
+pub fn uuid(params: GenerateParams) -> Result<String, GenerateError> {
+    let version = match params.version {
         Some(version) => match version.as_str() {
             "v4" | "4" => 4,
-            "v1" | "1" | "v2" | "2" | "v3" | "3" | "v5" | "5" | "v6" | "6" | "v7" | "7" | "v8"
-            | "8" => {
+            "v3" | "3" => 3,
+            "v5" | "5" => 5,
+            "v1" | "1" | "v2" | "2" | "v6" | "6" | "v7" | "7" | "v8" | "8" => {
                 return Err(GenerateError::Uuid(format!(
                     "Version {} not implemented",
                     version
@@ -103,6 +112,46 @@ pub fn uuid(version: Option<String>) -> Result<String, GenerateError> {
 
     match version {
         4 => Ok(Uuid::new_v4().to_string()),
+        3 | 5 => {
+            let namespace = match &params.namespace {
+                Some(namespace) => {
+                    if namespace.is_empty() {
+                        return Err(GenerateError::Uuid("Missing namespace".to_string()));
+                    }
+
+                    match namespace.to_ascii_lowercase().as_str() {
+                        "dns" => Uuid::NAMESPACE_DNS,
+                        "url" => Uuid::NAMESPACE_URL,
+                        "oid" => Uuid::NAMESPACE_OID,
+                        "x500" => Uuid::NAMESPACE_X500,
+                        _ => {
+                            return Err(GenerateError::Uuid(format!(
+                                "Invalid value for namespace: {}",
+                                namespace
+                            )))
+                        }
+                    }
+                }
+                None => return Err(GenerateError::Uuid("Missing namespace".to_string())),
+            };
+
+            let name = match &params.name {
+                Some(name) => {
+                    if name.is_empty() {
+                        return Err(GenerateError::Uuid("Missing name".to_string()));
+                    }
+
+                    name.as_bytes()
+                }
+                None => return Err(GenerateError::Uuid("Missing name".to_string())),
+            };
+
+            match version {
+                3 => Ok(Uuid::new_v3(&namespace, name).to_string()),
+                5 => Ok(Uuid::new_v5(&namespace, name).to_string()),
+                _ => unreachable!(),
+            }
+        }
         _ => Err(GenerateError::Uuid(format!(
             "Version {} not implemented",
             version
@@ -144,8 +193,20 @@ mod tests {
     }
 
     #[test]
-    fn test_uuid() {
+    fn test_uuid_v3() {
+        let u = Uuid::new_v3(&Uuid::NAMESPACE_DNS, &[]);
+        assert_eq!(Some(Version::Md5), u.get_version());
+    }
+
+    #[test]
+    fn test_uuid_v4() {
         let u = Uuid::new_v4();
         assert_eq!(Some(Version::Random), u.get_version());
+    }
+
+    #[test]
+    fn test_uuid_v5() {
+        let u = Uuid::new_v5(&Uuid::NAMESPACE_DNS, &[]);
+        assert_eq!(Some(Version::Sha1), u.get_version());
     }
 }
