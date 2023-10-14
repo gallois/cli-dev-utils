@@ -22,8 +22,12 @@ pub enum GenerateSubcommands {
     },
     Uuid {
         version: Option<String>,
+        #[arg(long)]
         namespace: Option<String>,
+        #[arg(long)]
         name: Option<String>,
+        #[arg(long)]
+        node_id: Option<String>,
     },
 }
 
@@ -31,6 +35,7 @@ pub struct GenerateParams {
     pub version: Option<String>,
     pub namespace: Option<String>,
     pub name: Option<String>,
+    pub node_id: Option<String>,
 }
 
 #[derive(Debug)]
@@ -99,7 +104,8 @@ pub fn uuid(params: GenerateParams) -> Result<String, GenerateError> {
             "v4" | "4" => 4,
             "v3" | "3" => 3,
             "v5" | "5" => 5,
-            "v1" | "1" | "v2" | "2" | "v6" | "6" | "v7" | "7" | "v8" | "8" => {
+            "v1" | "1" => 1,
+            "v2" | "2" | "v6" | "6" | "v7" | "7" | "v8" | "8" => {
                 return Err(GenerateError::Uuid(format!(
                     "Version {} not implemented",
                     version
@@ -151,6 +157,27 @@ pub fn uuid(params: GenerateParams) -> Result<String, GenerateError> {
                 5 => Ok(Uuid::new_v5(&namespace, name).to_string()),
                 _ => unreachable!(),
             }
+        }
+        1 => {
+            let node_id_slice: &[u8; 6] = match &params.node_id {
+                Some(node_id) => {
+                    if node_id.is_empty() {
+                        return Err(GenerateError::Uuid("Missing node_id".to_string()));
+                    }
+                    match node_id.as_bytes()[..6].try_into() {
+                        Ok(slice) => slice,
+                        Err(_) => {
+                            return Err(GenerateError::Uuid(format!(
+                                "Invalid value for node_id: {}",
+                                node_id
+                            )))
+                        }
+                    }
+                }
+                None => return Err(GenerateError::Uuid("Missing node_id".to_string())),
+            };
+
+            Ok(Uuid::now_v1(node_id_slice).to_string())
         }
         _ => Err(GenerateError::Uuid(format!(
             "Version {} not implemented",

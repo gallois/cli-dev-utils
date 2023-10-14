@@ -271,11 +271,13 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
             version,
             namespace,
             name,
+            node_id,
         } => {
             let params = GenerateParams {
                 version,
                 namespace,
                 name,
+                node_id,
             };
 
             match dev_utils::generate::uuid(params) {
