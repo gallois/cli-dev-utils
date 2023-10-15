@@ -28,6 +28,8 @@ pub enum GenerateSubcommands {
         name: Option<String>,
         #[arg(long)]
         node_id: Option<String>,
+        #[arg(short, long)]
+        count: Option<u8>,
     },
 }
 
@@ -98,8 +100,8 @@ pub fn token(
     Ok(token)
 }
 
-pub fn uuid(params: GenerateParams) -> Result<String, GenerateError> {
-    let version = match params.version {
+pub fn uuid(params: &GenerateParams) -> Result<String, GenerateError> {
+    let version = match &params.version {
         Some(version) => match version.as_str() {
             "v4" | "4" => 4,
             "v3" | "3" => 3,

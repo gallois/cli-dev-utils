@@ -272,6 +272,7 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
             namespace,
             name,
             node_id,
+            count,
         } => {
             let params = GenerateParams {
                 version,
@@ -280,10 +281,17 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
                 node_id,
             };
 
-            match dev_utils::generate::uuid(params) {
-                Ok(uuid) => Ok(uuid),
-                Err(e) => Err(CliError::GenerateError(e)),
+            let count = count.unwrap_or(1);
+            let mut result: Vec<String> = vec![];
+            let mut i = 0;
+            while i < count {
+                match dev_utils::generate::uuid(&params) {
+                    Ok(uuid) => result.push(uuid),
+                    Err(e) => return Err(CliError::GenerateError(e)),
+                }
+                i += 1;
             }
+            Ok(result.join("\n"))
         }
     }
 }
