@@ -4,6 +4,7 @@ use clap::{arg, Subcommand};
 use rand::Rng;
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 
+use ulid::Ulid;
 use uuid::Uuid;
 
 #[derive(Clone, EnumIter, EnumString, EnumVariantNames, Subcommand)]
@@ -28,6 +29,10 @@ pub enum GenerateSubcommands {
         name: Option<String>,
         #[arg(long)]
         node_id: Option<String>,
+        #[arg(short, long)]
+        count: Option<u8>,
+    },
+    Ulid {
         #[arg(short, long)]
         count: Option<u8>,
     },
@@ -186,6 +191,10 @@ pub fn uuid(params: &GenerateParams) -> Result<String, GenerateError> {
             version
         ))),
     }
+}
+
+pub fn ulid() -> String {
+    Ulid::new().to_string()
 }
 
 #[cfg(test)]

@@ -283,13 +283,19 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
 
             let count = count.unwrap_or(1);
             let mut result: Vec<String> = vec![];
-            let mut i = 0;
-            while i < count {
+            for _ in 0..count {
                 match dev_utils::generate::uuid(&params) {
                     Ok(uuid) => result.push(uuid),
                     Err(e) => return Err(CliError::GenerateError(e)),
                 }
-                i += 1;
+            }
+            Ok(result.join("\n"))
+        }
+        GenerateSubcommands::Ulid { count } => {
+            let count = count.unwrap_or(1);
+            let mut result = vec![];
+            for _ in 0..count {
+                result.push(dev_utils::generate::ulid());
             }
             Ok(result.join("\n"))
         }
