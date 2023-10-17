@@ -54,6 +54,13 @@ pub fn url(url_encode_args: URLArgs, cli_args: Cli) -> Result<String, CliError> 
                 e
             ))),
         },
+        UrlAction::Parse => match dev_utils::url::parse(url_str) {
+            Ok(parsed) => Ok(parsed),
+            Err(e) => Err(CliError::UrlError(format!(
+                "Error while parsing url: {}",
+                e
+            ))),
+        },
     }
 }
 
