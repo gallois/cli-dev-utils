@@ -153,6 +153,10 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
                 Err(e) => Err(CliError::ConversionError(e)),
             }
         }
+        Conversion::Text2ASCIIBinary => match dev_utils::convert::text2asciibinary(content_str) {
+            Ok(data) => Ok(data),
+            Err(e) => Err(CliError::ConversionError(e)),
+        },
     }
 }
 

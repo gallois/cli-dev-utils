@@ -32,6 +32,7 @@ pub enum Conversion {
     F2K,
     Kelvin2Fahrenheit,
     K2F,
+    Text2ASCIIBinary,
 }
 
 #[derive(Debug)]
@@ -284,6 +285,17 @@ pub fn kelvin2fahrenheit(data: &str) -> Result<f64, ConversionError> {
     Ok(result)
 }
 
+pub fn text2asciibinary(data: &str) -> Result<String, ConversionError> {
+    let mut result = String::new();
+
+    data.chars().for_each(|c| {
+        let byte = c as u8;
+        result.push_str(&format!("{:08b} ", byte));
+    });
+
+    Ok(result.trim_end().to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -410,6 +422,24 @@ mod tests {
         let result = kelvin2fahrenheit("273.15");
         match result {
             Ok(s) => assert_eq!(s, 32.0),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_text2asciibinary() {
+        let result = text2asciibinary("abc");
+        match result {
+            Ok(s) => assert_eq!(s, "01100001 01100010 01100011"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result = text2asciibinary("á ê ç õ");
+        match result {
+            Ok(s) => assert_eq!(
+                s,
+                "11100001 00100000 11101010 00100000 11100111 00100000 11110101"
+            ),
             Err(e) => panic!("{:#?}", e),
         }
     }
