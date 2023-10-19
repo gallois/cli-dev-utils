@@ -33,6 +33,7 @@ pub enum Conversion {
     Kelvin2Fahrenheit,
     K2F,
     Text2ASCIIBinary,
+    AsciiBinary2Text,
 }
 
 #[derive(Debug)]
@@ -48,6 +49,7 @@ pub enum ConversionError {
     Utf8Error(Utf8Error),
     Hex2String(String),
     TemperatureConversion(String),
+    AsciiBinary2Text(String),
 }
 
 impl Display for ConversionError {
@@ -296,6 +298,24 @@ pub fn text2asciibinary(data: &str) -> Result<String, ConversionError> {
     Ok(result.trim_end().to_string())
 }
 
+pub fn asciibinary2text(data: &str) -> Result<String, ConversionError> {
+    let mut result = String::new();
+    for byte in data.split_whitespace() {
+        let byte = match u8::from_str_radix(byte, 2) {
+            Ok(b) => b,
+            Err(_) => {
+                return Err(ConversionError::AsciiBinary2Text(format!(
+                    "Invalid binary character {}",
+                    byte
+                )))
+            }
+        };
+        result.push(byte as char);
+    }
+
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -440,6 +460,22 @@ mod tests {
                 s,
                 "11100001 00100000 11101010 00100000 11100111 00100000 11110101"
             ),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_asciibinary2text() {
+        let result = asciibinary2text("01100001 01100010 01100011");
+        match result {
+            Ok(s) => assert_eq!(s, "abc"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result =
+            asciibinary2text("11100001 00100000 11101010 00100000 11100111 00100000 11110101");
+        match result {
+            Ok(s) => assert_eq!(s, "á ê ç õ"),
             Err(e) => panic!("{:#?}", e),
         }
     }

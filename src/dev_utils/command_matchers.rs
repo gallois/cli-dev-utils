@@ -157,6 +157,10 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
             Ok(data) => Ok(data),
             Err(e) => Err(CliError::ConversionError(e)),
         },
+        Conversion::AsciiBinary2Text => match dev_utils::convert::asciibinary2text(content_str) {
+            Ok(data) => Ok(data),
+            Err(e) => Err(CliError::ConversionError(e)),
+        },
     }
 }
 
