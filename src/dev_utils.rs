@@ -9,6 +9,7 @@ pub mod datetime;
 pub mod generate;
 pub mod hash;
 pub mod list;
+pub mod percentage;
 pub mod url;
 
 pub enum CliError {
@@ -22,6 +23,7 @@ pub enum CliError {
     DateError(date::DateError),
     ColourError(String),
     GenerateError(generate::GenerateError),
+    PercentageError(String),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {

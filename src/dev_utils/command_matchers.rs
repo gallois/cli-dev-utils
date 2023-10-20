@@ -1,13 +1,14 @@
 use crate::dev_utils::date::DateAction;
 use crate::{
     dev_utils, B64Args, Cli, ColourArgs, ConversionArgs, DateArgs, DateTimeArgs, GenerateArgs,
-    HashArgs, ListArgs, URLArgs,
+    HashArgs, ListArgs, PercentageArgs, URLArgs,
 };
 use std::str::FromStr;
 
 use super::colour::Colour;
 use super::generate::{GenerateParams, GenerateSubcommands};
 use super::list::ListAction;
+use super::percentage::PercentageAction;
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
 pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
@@ -313,6 +314,48 @@ pub fn generate(generate_args: GenerateArgs) -> Result<String, CliError> {
                 result.push(dev_utils::generate::ulid());
             }
             Ok(result.join("\n"))
+        }
+    }
+}
+
+pub fn percentage(percentage_args: PercentageArgs) -> Result<String, CliError> {
+    let action = match PercentageAction::from_str(&percentage_args.action) {
+        Ok(a) => a,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid action. Valid actions are: {}",
+                dev_utils::enum_variants::<PercentageAction>()
+            )));
+        }
+    };
+
+    match action {
+        PercentageAction::To => {
+            let from;
+            let to;
+            let precision;
+            if let Some(f) = percentage_args.from_number {
+                from = *f;
+            } else {
+                return Err(CliError::NoDataProvided);
+            }
+
+            if let Some(t) = percentage_args.to_number {
+                to = *t;
+            } else {
+                return Err(CliError::NoDataProvided);
+            }
+
+            if let Some(p) = percentage_args.precision {
+                precision = *p;
+            } else {
+                precision = 0;
+            }
+
+            match dev_utils::percentage::to(from, to, precision) {
+                Ok(result) => Ok(result),
+                Err(e) => Err(CliError::PercentageError(e)),
+            }
         }
     }
 }

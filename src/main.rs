@@ -11,6 +11,7 @@ use dev_utils::datetime::DateTimeFormat;
 use dev_utils::generate::GenerateSubcommands;
 use dev_utils::hash::HashType;
 use dev_utils::list::ListAction;
+use dev_utils::percentage::PercentageAction;
 use dev_utils::url::UrlAction;
 use dev_utils::CliError;
 
@@ -36,6 +37,7 @@ enum Commands {
     #[clap(visible_alias = "color")]
     Colour(ColourArgs),
     Generate(GenerateArgs),
+    Percentage(PercentageArgs),
 }
 
 #[derive(Args, Clone)]
@@ -103,6 +105,20 @@ pub struct GenerateArgs {
     type_: GenerateSubcommands,
 }
 
+#[derive(Args, Clone)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<PercentageAction>()))]
+pub struct PercentageArgs {
+    action: String,
+    #[arg(short, long)]
+    from_number: Option<MaybeStdin<f64>>,
+    #[arg(short, long)]
+    to_number: Option<MaybeStdin<f64>>,
+    #[arg(short, long)]
+    percentage: Option<MaybeStdin<f32>>,
+    #[arg(long, default_value = "0")]
+    precision: Option<MaybeStdin<u8>>,
+}
+
 fn handle_cli_error(e: CliError) {
     match e {
         CliError::NoDataProvided => {
@@ -143,6 +159,10 @@ fn handle_cli_error(e: CliError) {
         }
         CliError::GenerateError(e) => {
             eprintln!("Error while generating: {}", e);
+            exit(exitcode::DATAERR);
+        }
+        CliError::PercentageError(e) => {
+            eprintln!("Error while processing percentage: {}", e);
             exit(exitcode::DATAERR);
         }
     }
@@ -202,6 +222,12 @@ fn main() {
         }
         Commands::Generate(ref generate_args) => {
             match dev_utils::command_matchers::generate(generate_args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
+            }
+        }
+        Commands::Percentage(ref percentage_args) => {
+            match dev_utils::command_matchers::percentage(percentage_args.clone()) {
                 Ok(s) => println!("{}", s),
                 Err(e) => handle_cli_error(e),
             }
