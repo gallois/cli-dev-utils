@@ -117,6 +117,8 @@ pub struct PercentageArgs {
     percentage: Option<MaybeStdin<f32>>,
     #[arg(long, default_value = "0")]
     precision: Option<MaybeStdin<u8>>,
+    #[arg(short, long)]
+    of_number: Option<MaybeStdin<f64>>,
 }
 
 fn handle_cli_error(e: CliError) {

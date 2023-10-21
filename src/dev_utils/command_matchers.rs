@@ -357,5 +357,32 @@ pub fn percentage(percentage_args: PercentageArgs) -> Result<String, CliError> {
                 Err(e) => Err(CliError::PercentageError(e)),
             }
         }
+        PercentageAction::Of => {
+            let of;
+            let percentage;
+            let precision;
+
+            if let Some(o) = percentage_args.of_number {
+                of = *o;
+            } else {
+                return Err(CliError::NoDataProvided);
+            }
+            if let Some(p) = percentage_args.percentage {
+                percentage = *p;
+            } else {
+                return Err(CliError::NoDataProvided);
+            }
+
+            if let Some(p) = percentage_args.precision {
+                precision = *p;
+            } else {
+                precision = 0;
+            }
+
+            match dev_utils::percentage::of(percentage, of, precision) {
+                Ok(result) => Ok(result),
+                Err(e) => Err(CliError::PercentageError(e)),
+            }
+        }
     }
 }
