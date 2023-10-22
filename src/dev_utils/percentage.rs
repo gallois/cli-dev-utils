@@ -5,6 +5,7 @@ use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 pub enum PercentageAction {
     To,
     Of,
+    Change,
 }
 
 pub fn to(from_number: f64, to_number: f64, precision: u8) -> Result<String, String> {
@@ -23,6 +24,14 @@ pub fn of(percentage: f32, of_number: f64, precision: u8) -> Result<String, Stri
     ))
 }
 
+pub fn change(from_number: f64, to_number: f64, precision: u8) -> Result<String, String> {
+    Ok(format!(
+        "{value:.precision$}%",
+        value = ((to_number - from_number) / from_number.abs()) * 100.0,
+        precision = precision as usize,
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -38,5 +47,11 @@ mod tests {
         assert_eq!(of(50.0, 100.0, 0).unwrap(), "50");
         assert_eq!(of(33.33, 100.0, 2).unwrap(), "33.33");
         assert_eq!(of(25.0, 200.0, 3).unwrap(), "50.000");
+    }
+
+    #[test]
+    fn test_change() {
+        assert_eq!(change(100.0, 50.0, 0).unwrap(), "-50%");
+        assert_eq!(change(50.0, 100.0, 0).unwrap(), "100%");
     }
 }

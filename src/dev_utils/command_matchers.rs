@@ -372,7 +372,6 @@ pub fn percentage(percentage_args: PercentageArgs) -> Result<String, CliError> {
             } else {
                 return Err(CliError::NoDataProvided);
             }
-
             if let Some(p) = percentage_args.precision {
                 precision = *p;
             } else {
@@ -380,6 +379,32 @@ pub fn percentage(percentage_args: PercentageArgs) -> Result<String, CliError> {
             }
 
             match dev_utils::percentage::of(percentage, of, precision) {
+                Ok(result) => Ok(result),
+                Err(e) => Err(CliError::PercentageError(e)),
+            }
+        }
+        PercentageAction::Change => {
+            let from;
+            let to;
+            let precision;
+
+            if let Some(f) = percentage_args.from_number {
+                from = *f;
+            } else {
+                return Err(CliError::NoDataProvided);
+            };
+            if let Some(t) = percentage_args.to_number {
+                to = *t;
+            } else {
+                return Err(CliError::NoDataProvided);
+            };
+            if let Some(p) = percentage_args.precision {
+                precision = *p;
+            } else {
+                precision = 0;
+            };
+
+            match dev_utils::percentage::change(from, to, precision) {
                 Ok(result) => Ok(result),
                 Err(e) => Err(CliError::PercentageError(e)),
             }
