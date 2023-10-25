@@ -162,6 +162,12 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
             Ok(data) => Ok(data),
             Err(e) => Err(CliError::ConversionError(e)),
         },
+        Conversion::Kilometers2Miles | Conversion::Km2Mi => {
+            match dev_utils::convert::kilometers2miles(content_str) {
+                Ok(data) => Ok(data),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
     }
 }
 

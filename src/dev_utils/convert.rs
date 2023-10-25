@@ -34,6 +34,8 @@ pub enum Conversion {
     K2F,
     Text2ASCIIBinary,
     AsciiBinary2Text,
+    Kilometers2Miles,
+    Km2Mi,
 }
 
 #[derive(Debug)]
@@ -298,6 +300,20 @@ pub fn text2asciibinary(data: &str) -> Result<String, ConversionError> {
     Ok(result.trim_end().to_string())
 }
 
+pub fn kilometers2miles(data: &str) -> Result<String, ConversionError> {
+    let kilometers = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = kilometers * 0.621371;
+    Ok(result.to_string())
+}
+
 pub fn asciibinary2text(data: &str) -> Result<String, ConversionError> {
     let mut result = String::new();
     for byte in data.split_whitespace() {
@@ -476,6 +492,21 @@ mod tests {
             asciibinary2text("11100001 00100000 11101010 00100000 11100111 00100000 11110101");
         match result {
             Ok(s) => assert_eq!(s, "á ê ç õ"),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_kilometers2miles() {
+        let result = kilometers2miles("0");
+        match result {
+            Ok(s) => assert_eq!(s, "0"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result = kilometers2miles("1");
+        match result {
+            Ok(s) => assert_eq!(s, "0.621371"),
             Err(e) => panic!("{:#?}", e),
         }
     }
