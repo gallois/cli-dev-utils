@@ -36,6 +36,8 @@ pub enum Conversion {
     AsciiBinary2Text,
     Kilometers2Miles,
     Km2Mi,
+    Miles2Kilometers,
+    Mi2Km,
 }
 
 #[derive(Debug)]
@@ -300,20 +302,6 @@ pub fn text2asciibinary(data: &str) -> Result<String, ConversionError> {
     Ok(result.trim_end().to_string())
 }
 
-pub fn kilometers2miles(data: &str) -> Result<String, ConversionError> {
-    let kilometers = match data.parse::<f64>() {
-        Ok(v) => v,
-        Err(_) => {
-            return Err(ConversionError::TemperatureConversion(format!(
-                "Cannot convert {} to a number",
-                data
-            )))
-        }
-    };
-    let result = kilometers * 0.621371;
-    Ok(result.to_string())
-}
-
 pub fn asciibinary2text(data: &str) -> Result<String, ConversionError> {
     let mut result = String::new();
     for byte in data.split_whitespace() {
@@ -330,6 +318,34 @@ pub fn asciibinary2text(data: &str) -> Result<String, ConversionError> {
     }
 
     Ok(result)
+}
+
+pub fn kilometers2miles(data: &str) -> Result<String, ConversionError> {
+    let kilometers = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = kilometers * 0.621371;
+    Ok(result.to_string())
+}
+
+pub fn miles2kilometers(data: &str) -> Result<String, ConversionError> {
+    let miles = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = miles / 0.621371;
+    Ok(result.to_string())
 }
 
 #[cfg(test)]
@@ -507,6 +523,21 @@ mod tests {
         let result = kilometers2miles("1");
         match result {
             Ok(s) => assert_eq!(s, "0.621371"),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_miles2kilometers() {
+        let result = miles2kilometers("0");
+        match result {
+            Ok(s) => assert_eq!(s, "0"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result = miles2kilometers("1");
+        match result {
+            Ok(s) => assert_eq!(s, "1.6093444978925633"),
             Err(e) => panic!("{:#?}", e),
         }
     }

@@ -168,6 +168,12 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
                 Err(e) => Err(CliError::ConversionError(e)),
             }
         }
+        Conversion::Miles2Kilometers | Conversion::Mi2Km => {
+            match dev_utils::convert::miles2kilometers(content_str) {
+                Ok(data) => Ok(data),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
     }
 }
 
