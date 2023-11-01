@@ -174,6 +174,12 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
                 Err(e) => Err(CliError::ConversionError(e)),
             }
         }
+        Conversion::Pounds2Kilos | Conversion::Lbs2Kgs => {
+            match dev_utils::convert::pounds2kilos(content_str) {
+                Ok(data) => Ok(data),
+                Err(e) => Err(CliError::ConversionError(e)),
+            }
+        }
     }
 }
 

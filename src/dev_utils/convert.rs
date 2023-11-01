@@ -38,6 +38,8 @@ pub enum Conversion {
     Km2Mi,
     Miles2Kilometers,
     Mi2Km,
+    Pounds2Kilos,
+    Lbs2Kgs,
 }
 
 #[derive(Debug)]
@@ -348,6 +350,20 @@ pub fn miles2kilometers(data: &str) -> Result<String, ConversionError> {
     Ok(result.to_string())
 }
 
+pub fn pounds2kilos(data: &str) -> Result<String, ConversionError> {
+    let pounds = match data.parse::<f64>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::TemperatureConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let result = pounds * 0.453592;
+    Ok(result.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -538,6 +554,21 @@ mod tests {
         let result = miles2kilometers("1");
         match result {
             Ok(s) => assert_eq!(s, "1.6093444978925633"),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_pounds2kilos() {
+        let result = pounds2kilos("0");
+        match result {
+            Ok(s) => assert_eq!(s, "0"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        let result = pounds2kilos("1");
+        match result {
+            Ok(s) => assert_eq!(s, "0.453592"),
             Err(e) => panic!("{:#?}", e),
         }
     }
