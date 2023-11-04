@@ -19,7 +19,7 @@ pub enum CliError {
     UrlError(String),
     B64Error(base64::B64Error),
     ConversionError(convert::ConversionError),
-    DateTimeError(self::datetime::DateTimeError),
+    DateTimeError(datetime::DateTimeError),
     DateError(date::DateError),
     ColourError(String),
     GenerateError(generate::GenerateError),
