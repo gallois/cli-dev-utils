@@ -2,6 +2,7 @@ use capitalize;
 use capitalize::Capitalize;
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 // TODO https://github.com/chrislearn/cruet might be more flexible
+use itertools::Itertools;
 
 #[derive(EnumIter, EnumString, EnumVariantNames)]
 #[strum(serialize_all = "lowercase")]
@@ -12,6 +13,9 @@ pub enum ListAction {
     Capitalise,
     Capitalize,
     Reverse,
+    Deduplicate,
+    Unique,
+    Dedup,
 }
 
 pub fn sort(content: &str, separator: &str) -> String {
@@ -57,6 +61,15 @@ pub fn reverse(content: &str, separator: &str) -> String {
     tokens.reverse();
 
     tokens.join(separator)
+}
+
+pub fn deduplicate(content: &str, separator: &str) -> String {
+    let tokens = content
+        .split(separator)
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
+
+    tokens.iter().unique().join(separator)
 }
 
 #[cfg(test)]
@@ -118,5 +131,17 @@ mod tests {
             reverse("One Two Three Four Five", " "),
             "Five Four Three Two One"
         )
+    }
+
+    #[test]
+    fn test_deduplicate() {
+        assert_eq!(
+            deduplicate("One Two Three Four Five Five", " "),
+            "One Two Three Four Five"
+        );
+        assert_eq!(
+            deduplicate("One Two Three Four Five Five Four", " "),
+            "One Two Three Four Five"
+        );
     }
 }

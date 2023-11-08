@@ -220,6 +220,7 @@ dependencies = [
  "edit",
  "exitcode",
  "flatten-json-object",
+ "itertools",
  "json-objects-to-csv",
  "md5",
  "rand",
@@ -475,6 +476,15 @@ dependencies = [
  "hermit-abi",
  "rustix",
  "windows-sys",
+]
+
+[[package]]
+name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
 ]
 
 [[package]]

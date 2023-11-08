@@ -241,6 +241,9 @@ pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
             Ok(dev_utils::list::capitalise(content_str, separator))
         }
         ListAction::Reverse => Ok(dev_utils::list::reverse(content_str, separator)),
+        ListAction::Deduplicate | ListAction::Unique | ListAction::Dedup => {
+            Ok(dev_utils::list::deduplicate(content_str, separator))
+        }
     }
 }
 
