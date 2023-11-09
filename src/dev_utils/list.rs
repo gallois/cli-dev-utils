@@ -1,5 +1,6 @@
 use capitalize;
 use capitalize::Capitalize;
+use rand::seq::SliceRandom;
 use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 // TODO https://github.com/chrislearn/cruet might be more flexible
 use itertools::Itertools;
@@ -16,6 +17,8 @@ pub enum ListAction {
     Deduplicate,
     Unique,
     Dedup,
+    Randomise,
+    Randomize,
 }
 
 pub fn sort(content: &str, separator: &str) -> String {
@@ -70,6 +73,16 @@ pub fn deduplicate(content: &str, separator: &str) -> String {
         .collect::<Vec<String>>();
 
     tokens.iter().unique().join(separator)
+}
+
+pub fn randomise(content: &str, separator: &str) -> String {
+    let mut tokens = content
+        .split(separator)
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
+
+    tokens.shuffle(&mut rand::thread_rng());
+    tokens.join(separator)
 }
 
 #[cfg(test)]

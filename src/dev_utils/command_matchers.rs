@@ -244,6 +244,9 @@ pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
         ListAction::Deduplicate | ListAction::Unique | ListAction::Dedup => {
             Ok(dev_utils::list::deduplicate(content_str, separator))
         }
+        ListAction::Randomise | ListAction::Randomize => {
+            Ok(dev_utils::list::randomise(content_str, separator))
+        }
     }
 }
 
