@@ -232,6 +232,8 @@ pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
     let content = dev_utils::get_content(list_args.content, cli_args.editor)?;
     let content_str = content.as_str();
     let separator = list_args.separator.as_str();
+    let index = list_args.index;
+    let length = list_args.length;
 
     match action {
         ListAction::Sort => Ok(dev_utils::list::sort(content_str, separator)),
@@ -247,6 +249,12 @@ pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
         ListAction::Randomise | ListAction::Randomize => {
             Ok(dev_utils::list::randomise(content_str, separator))
         }
+        ListAction::Slice => Ok(dev_utils::list::slice(
+            content_str,
+            separator,
+            index,
+            length,
+        )),
     }
 }
 

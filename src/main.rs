@@ -84,6 +84,10 @@ struct ListArgs {
     content: Option<MaybeStdin<String>>,
     #[arg(short, long, default_value = ",")]
     separator: String,
+    #[arg(short, long, default_value = "0")]
+    index: usize,
+    #[arg(short, long, default_value = "0")]
+    length: usize,
 }
 #[derive(Args, Clone)]
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<Colour>()))]

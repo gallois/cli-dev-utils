@@ -19,6 +19,7 @@ pub enum ListAction {
     Dedup,
     Randomise,
     Randomize,
+    Slice,
 }
 
 pub fn sort(content: &str, separator: &str) -> String {
@@ -83,6 +84,21 @@ pub fn randomise(content: &str, separator: &str) -> String {
 
     tokens.shuffle(&mut rand::thread_rng());
     tokens.join(separator)
+}
+
+pub fn slice(content: &str, separator: &str, index: usize, length: usize) -> String {
+    let tokens = content
+        .split(separator)
+        .map(|s| s.to_string())
+        .collect::<Vec<String>>();
+
+    tokens
+        .iter()
+        .skip(index)
+        .take(length)
+        .cloned()
+        .collect::<Vec<String>>()
+        .join(separator)
 }
 
 #[cfg(test)]
@@ -156,5 +172,19 @@ mod tests {
             deduplicate("One Two Three Four Five Five Four", " "),
             "One Two Three Four Five"
         );
+    }
+
+    #[test]
+    fn test_slice() {
+        assert_eq!(
+            slice("One Two Three Four Five Five Four", " ", 0, 3),
+            "One Two Three"
+        );
+        assert_eq!(
+            slice("One Two Three Four Five Five Four", " ", 1, 3),
+            "Two Three Four"
+        );
+        assert_eq!(slice("One Two Three Four Five Five Four", " ", 1, 1), "Two");
+        assert_eq!(slice("One Two Three Four Five Five Four", " ", 8, 1), "");
     }
 }
