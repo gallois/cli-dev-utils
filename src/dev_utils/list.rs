@@ -17,8 +17,7 @@ pub enum ListAction {
     Deduplicate,
     Unique,
     Dedup,
-    Randomise,
-    Randomize,
+    Shuffle,
     Slice,
 }
 
@@ -76,7 +75,7 @@ pub fn deduplicate(content: &str, separator: &str) -> String {
     tokens.iter().unique().join(separator)
 }
 
-pub fn randomise(content: &str, separator: &str) -> String {
+pub fn shuffle(content: &str, separator: &str) -> String {
     let mut tokens = content
         .split(separator)
         .map(|s| s.to_string())
