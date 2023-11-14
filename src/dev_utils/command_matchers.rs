@@ -253,6 +253,7 @@ pub fn list(list_args: ListArgs, cli_args: Cli) -> Result<String, CliError> {
             index,
             length,
         )),
+        ListAction::Count => Ok(dev_utils::list::count(content_str, separator).to_string()),
     }
 }
 

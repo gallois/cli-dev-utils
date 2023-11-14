@@ -19,6 +19,7 @@ pub enum ListAction {
     Dedup,
     Shuffle,
     Slice,
+    Count,
 }
 
 pub fn sort(content: &str, separator: &str) -> String {
@@ -98,6 +99,13 @@ pub fn slice(content: &str, separator: &str, index: usize, length: usize) -> Str
         .cloned()
         .collect::<Vec<String>>()
         .join(separator)
+}
+
+pub fn count(content: &str, separator: &str) -> usize {
+    if content.is_empty() {
+        return 0;
+    }
+    content.split(separator).count()
 }
 
 #[cfg(test)]
@@ -185,5 +193,11 @@ mod tests {
         );
         assert_eq!(slice("One Two Three Four Five Five Four", " ", 1, 1), "Two");
         assert_eq!(slice("One Two Three Four Five Five Four", " ", 8, 1), "");
+    }
+
+    #[test]
+    fn test_count() {
+        assert_eq!(count("one,two,three,four,five", ","), 5);
+        assert_eq!(count("", " "), 0);
     }
 }
