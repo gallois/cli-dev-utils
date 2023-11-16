@@ -12,6 +12,7 @@ use dev_utils::generate::GenerateSubcommands;
 use dev_utils::hash::HashType;
 use dev_utils::list::ListAction;
 use dev_utils::percentage::PercentageAction;
+use dev_utils::regex::RegexAction;
 use dev_utils::url::UrlAction;
 use dev_utils::CliError;
 
@@ -38,6 +39,7 @@ enum Commands {
     Colour(ColourArgs),
     Generate(GenerateArgs),
     Percentage(PercentageArgs),
+    Regex(RegexArgs),
 }
 
 #[derive(Args, Clone)]
@@ -123,6 +125,11 @@ pub struct PercentageArgs {
     precision: Option<MaybeStdin<u8>>,
     #[arg(short, long)]
     of_number: Option<MaybeStdin<f64>>,
+}
+#[derive(Args, Clone)]
+#[command(about = format!("Available actions: {}", dev_utils::enum_variants::<RegexAction>()))]
+pub struct RegexArgs {
+    action: String,
 }
 
 fn handle_cli_error(e: CliError) {
@@ -234,6 +241,12 @@ fn main() {
         }
         Commands::Percentage(ref percentage_args) => {
             match dev_utils::command_matchers::percentage(percentage_args.clone()) {
+                Ok(s) => println!("{}", s),
+                Err(e) => handle_cli_error(e),
+            }
+        }
+        Commands::Regex(ref regex_args) => {
+            match dev_utils::command_matchers::regex(regex_args.clone()) {
                 Ok(s) => println!("{}", s),
                 Err(e) => handle_cli_error(e),
             }

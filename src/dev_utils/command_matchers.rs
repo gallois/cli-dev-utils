@@ -1,7 +1,7 @@
 use crate::dev_utils::date::DateAction;
 use crate::{
     dev_utils, B64Args, Cli, ColourArgs, ConversionArgs, DateArgs, DateTimeArgs, GenerateArgs,
-    HashArgs, ListArgs, PercentageArgs, URLArgs,
+    HashArgs, ListArgs, PercentageArgs, RegexArgs, URLArgs,
 };
 use std::str::FromStr;
 
@@ -9,6 +9,7 @@ use super::colour::Colour;
 use super::generate::{GenerateParams, GenerateSubcommands};
 use super::list::ListAction;
 use super::percentage::PercentageAction;
+use super::regex::RegexAction;
 use super::{base64::B64Action, convert::Conversion, hash::HashType, url::UrlAction, CliError};
 
 pub fn hash(hash_args: HashArgs, cli_args: Cli) -> Result<String, CliError> {
@@ -446,5 +447,21 @@ pub fn percentage(percentage_args: PercentageArgs) -> Result<String, CliError> {
                 Err(e) => Err(CliError::PercentageError(e)),
             }
         }
+    }
+}
+
+pub fn regex(regex_args: RegexArgs) -> Result<String, CliError> {
+    let action = match RegexAction::from_str(&regex_args.action) {
+        Ok(a) => a,
+        Err(_) => {
+            return Err(CliError::InvalidArgs(format!(
+                "Invalid action. Valid actions are: {}",
+                dev_utils::enum_variants::<RegexAction>()
+            )));
+        }
+    };
+
+    match action {
+        RegexAction::Email => Ok(dev_utils::regex::email()),
     }
 }

@@ -10,6 +10,7 @@ pub mod generate;
 pub mod hash;
 pub mod list;
 pub mod percentage;
+pub mod regex;
 pub mod url;
 
 pub enum CliError {
