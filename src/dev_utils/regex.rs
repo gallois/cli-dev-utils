@@ -4,10 +4,16 @@ use strum_macros::{EnumIter, EnumString, EnumVariantNames};
 #[strum(serialize_all = "lowercase")]
 pub enum RegexAction {
     Email,
+    Url,
 }
 
 pub fn email() -> String {
     r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$".to_string()
+}
+
+pub fn url() -> String {
+    r"^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$"
+        .to_string()
 }
 
 #[cfg(test)]
@@ -17,5 +23,12 @@ mod tests {
     #[test]
     fn test_email() {
         assert_eq!(email(), r"^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$")
+    }
+    #[test]
+    fn test_url() {
+        assert_eq!(
+            url(),
+            r"^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$"
+        )
     }
 }
