@@ -466,5 +466,6 @@ pub fn regex(regex_args: RegexArgs) -> Result<String, CliError> {
         RegexAction::Url => Ok(dev_utils::regex::url()),
         RegexAction::IPv4 => Ok(dev_utils::regex::ipv4()),
         RegexAction::IPv6 => Ok(dev_utils::regex::ipv6()),
+        RegexAction::IPvX => Ok(dev_utils::regex::ipvx()),
     }
 }
