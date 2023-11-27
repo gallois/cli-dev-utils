@@ -467,5 +467,11 @@ pub fn regex(regex_args: RegexArgs) -> Result<String, CliError> {
         RegexAction::IPv4 => Ok(dev_utils::regex::ipv4()),
         RegexAction::IPv6 => Ok(dev_utils::regex::ipv6()),
         RegexAction::IPvX => Ok(dev_utils::regex::ipvx()),
+        RegexAction::Date => {
+            match dev_utils::regex::date(&regex_args.date_format.unwrap_or("".to_string())) {
+                Ok(result) => Ok(result),
+                Err(e) => Err(CliError::RegexError(e)),
+            }
+        }
     }
 }

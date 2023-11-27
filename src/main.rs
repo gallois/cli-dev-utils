@@ -130,6 +130,7 @@ pub struct PercentageArgs {
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<RegexAction>()))]
 pub struct RegexArgs {
     action: String,
+    date_format: Option<String>,
 }
 
 fn handle_cli_error(e: CliError) {
@@ -176,6 +177,10 @@ fn handle_cli_error(e: CliError) {
         }
         CliError::PercentageError(e) => {
             eprintln!("Error while processing percentage: {}", e);
+            exit(exitcode::DATAERR);
+        }
+        CliError::RegexError(e) => {
+            eprintln!("Error while processing regex: {}", e);
             exit(exitcode::DATAERR);
         }
     }

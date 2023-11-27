@@ -25,6 +25,7 @@ pub enum CliError {
     ColourError(String),
     GenerateError(generate::GenerateError),
     PercentageError(String),
+    RegexError(regex::RegexError),
 }
 
 pub fn enum_variants<T: strum::VariantNames>() -> String {
