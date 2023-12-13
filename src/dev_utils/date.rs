@@ -1,7 +1,7 @@
-use std::fmt::{Display, Formatter};
 use chrono::LocalResult::Single;
 use chrono::{Duration, Months, TimeZone};
 use regex::{Error, Regex};
+use std::fmt::{Display, Formatter};
 use strum_macros::EnumString;
 use strum_macros::{EnumIter, EnumVariantNames};
 
@@ -28,9 +28,9 @@ impl Display for DateError {
 
 pub fn delta(content: &str, current_time: i64) -> Result<String, DateError> {
     let now = if current_time < 0 {
-        chrono::Local::now()
+        chrono::Utc::now()
     } else {
-        match chrono::Local.timestamp_opt(current_time, 0) {
+        match chrono::Utc.timestamp_opt(current_time, 0) {
             Single(t) => t,
             _ => return Err(DateError::Input),
         }
