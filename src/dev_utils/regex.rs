@@ -59,7 +59,7 @@ pub fn date(date_format: &str) -> Result<String, RegexError> {
         ),
         (
             "YYYY.MM.dd",
-            r"^([12]\d{3}.(0[1-9]|1[0-2]).(0[1-9]|[12]\d|3[01]))$",
+            r"^([12]\d{3}\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01]))$",
         ),
         (
             "YYYYMMdd",
@@ -75,11 +75,27 @@ pub fn date(date_format: &str) -> Result<String, RegexError> {
         ),
         (
             "dd.MM.YYYY",
-            r"^((0[1-9]|[12]\d|3[01])).(0[1-9]|1[0-2]).[12]\d{3}$",
+            r"^((0[1-9]|[12]\d|3[01]))\.(0[1-9]|1[0-2])\.[12]\d{3}$",
         ),
         (
             "ddMMYYYY",
             r"^((0[1-9]|[12]\d|3[01]))(0[1-9]|1[0-2])[12]\d{3}$",
+        ),
+        (
+            "MM-dd-YYYY",
+            r"^(0[1-9]|1[0-2])-((0[1-9]|[12]\d|3[01]))-[12]\d{3}$",
+        ),
+        (
+            "MM/dd/YYYY",
+            r"^(0[1-9]|1[0-2])/((0[1-9]|[12]\d|3[01]))/[12]\d{3}$",
+        ),
+        (
+            "MM.dd.YYYY",
+            r"^(0[1-9]|1[0-2])\.((0[1-9]|[12]\d|3[01]))\.[12]\d{3}$",
+        ),
+        (
+            "MMddYYYY",
+            r"^(0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01]))[12]\d{3}$",
         ),
     ]);
     if let Some(regex) = date_format_map.get(date_format) {
@@ -151,7 +167,7 @@ mod tests {
 
         result = date("YYYY.MM.dd");
         match result {
-            Ok(s) => assert_eq!(s, r"^([12]\d{3}.(0[1-9]|1[0-2]).(0[1-9]|[12]\d|3[01]))$"),
+            Ok(s) => assert_eq!(s, r"^([12]\d{3}\.(0[1-9]|1[0-2])\.(0[1-9]|[12]\d|3[01]))$"),
             Err(e) => panic!("{:#?}", e),
         }
 
@@ -176,7 +192,7 @@ mod tests {
 
         result = date("dd.MM.YYYY");
         match result {
-            Ok(s) => assert_eq!(s, r"^((0[1-9]|[12]\d|3[01])).(0[1-9]|1[0-2]).[12]\d{3}$"),
+            Ok(s) => assert_eq!(s, r"^((0[1-9]|[12]\d|3[01]))\.(0[1-9]|1[0-2])\.[12]\d{3}$"),
             Err(e) => panic!("{:#?}", e),
         }
 
@@ -185,6 +201,29 @@ mod tests {
             Ok(s) => assert_eq!(s, r"^((0[1-9]|[12]\d|3[01]))(0[1-9]|1[0-2])[12]\d{3}$"),
             Err(e) => panic!("{:#?}", e),
         }
-        // assert_eq!(date("dd.mmm.YYYY"), r"^$");
+        // MM dd YYYY variations
+        result = date("MM-dd-YYYY");
+        match result {
+            Ok(s) => assert_eq!(s, r"^(0[1-9]|1[0-2])-((0[1-9]|[12]\d|3[01]))-[12]\d{3}$"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        result = date("MM/dd/YYYY");
+        match result {
+            Ok(s) => assert_eq!(s, r"^(0[1-9]|1[0-2])/((0[1-9]|[12]\d|3[01]))/[12]\d{3}$"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        result = date("MM.dd.YYYY");
+        match result {
+            Ok(s) => assert_eq!(s, r"^(0[1-9]|1[0-2])\.((0[1-9]|[12]\d|3[01]))\.[12]\d{3}$"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        result = date("MMddYYYY");
+        match result {
+            Ok(s) => assert_eq!(s, r"^(0[1-9]|1[0-2])((0[1-9]|[12]\d|3[01]))[12]\d{3}$"),
+            Err(e) => panic!("{:#?}", e),
+        }
     }
 }
