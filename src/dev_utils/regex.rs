@@ -13,11 +13,13 @@ pub enum RegexAction {
     IPv6,
     IPvX,
     Date,
+    Time,
 }
 
 #[derive(Debug)]
 pub enum RegexError {
     InvalidDateFormat(String),
+    InvalidTimeFormat(String),
 }
 
 impl Display for RegexError {
@@ -118,6 +120,20 @@ pub fn date(date_format: &str) -> Result<String, RegexError> {
             "Invalid date format: {}. Valid formats: {:?}",
             date_format,
             date_format_map.keys()
+        )))
+    }
+}
+
+pub fn time(time_format: &str) -> Result<String, RegexError> {
+    let time_format_map = HashMap::from([("hh:mm 12", r"^(0?[1-9]|1[0-2]):[0-5][0-9]$")]);
+    if let Some(regex) = time_format_map.get(time_format) {
+        Ok(regex.to_string())
+    } else {
+        Err(RegexError::InvalidTimeFormat(format!(
+            // FIXME improve display of valid formats
+            "Invalid time format: {}. Valid formats: {:?}",
+            time_format,
+            time_format_map.keys()
         )))
     }
 }
@@ -259,6 +275,15 @@ mod tests {
                 s,
                 r"^(?:(?:31/(?:0?[13578]|1[02]|(?:Jan|Mar|May|Jul|Aug|Oct|Dec)))\1|(?:(?:29|30)/(?:0?[1,3-9]|1[0-2]|(?:Jan|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))\2))(?:(?:1[6-9]|[2-9]\d)?\d{2})$|^(?:29/(?:0?2|(?:Feb))\3(?:(?:(?:1[6-9]|[2-9]\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\d|2[0-8])/(?:(?:0?[1-9]|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep))|(?:1[0-2]|(?:Oct|Nov|Dec)))\4(?:(?:1[6-9]|[2-9]\d)?\d{2})$"
             ),
+            Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_time() {
+        let result = time("hh:mm 12");
+        match result {
+            Ok(s) => assert_eq!(s, "^(0?[1-9]|1[0-2]):[0-5][0-9]$"),
             Err(e) => panic!("{:#?}", e),
         }
     }

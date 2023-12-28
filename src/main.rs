@@ -130,7 +130,7 @@ pub struct PercentageArgs {
 #[command(about = format!("Available actions: {}", dev_utils::enum_variants::<RegexAction>()))]
 pub struct RegexArgs {
     action: String,
-    date_format: Option<String>,
+    timedate_format: Option<String>,
 }
 
 fn handle_cli_error(e: CliError) {
