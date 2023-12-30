@@ -125,7 +125,13 @@ pub fn date(date_format: &str) -> Result<String, RegexError> {
 }
 
 pub fn time(time_format: &str) -> Result<String, RegexError> {
-    let time_format_map = HashMap::from([("hh:mm 12", r"^(0?[1-9]|1[0-2]):[0-5][0-9]$")]);
+    let time_format_map = HashMap::from([
+        ("hh:mm 12", r"^(0?[1-9]|1[0-2]):[0-5][0-9]$"),
+        (
+            "hh:mm am/pm",
+            r"^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$",
+        ),
+    ]);
     if let Some(regex) = time_format_map.get(time_format) {
         Ok(regex.to_string())
     } else {
@@ -281,9 +287,15 @@ mod tests {
 
     #[test]
     fn test_time() {
-        let result = time("hh:mm 12");
+        let mut result = time("hh:mm 12");
         match result {
             Ok(s) => assert_eq!(s, "^(0?[1-9]|1[0-2]):[0-5][0-9]$"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        result = time("hh:mm am/pm");
+        match result {
+            Ok(s) => assert_eq!(s, "^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$"),
             Err(e) => panic!("{:#?}", e),
         }
     }
