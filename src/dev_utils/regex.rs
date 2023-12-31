@@ -131,6 +131,7 @@ pub fn time(time_format: &str) -> Result<String, RegexError> {
             "hh:mm am/pm",
             r"^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$",
         ),
+        ("hh:mm 24", r"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"),
     ]);
     if let Some(regex) = time_format_map.get(time_format) {
         Ok(regex.to_string())
@@ -296,6 +297,12 @@ mod tests {
         result = time("hh:mm am/pm");
         match result {
             Ok(s) => assert_eq!(s, "^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$"),
+            Err(e) => panic!("{:#?}", e),
+        }
+
+        result = time("hh:mm 24");
+        match result {
+            Ok(s) => assert_eq!(s, "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"),
             Err(e) => panic!("{:#?}", e),
         }
     }
