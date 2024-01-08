@@ -132,6 +132,10 @@ pub fn time(time_format: &str) -> Result<String, RegexError> {
             r"^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$",
         ),
         ("hh:mm 24", r"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"),
+        (
+            "hh:mm:ss 24",
+            r"^(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)$",
+        ),
     ]);
     if let Some(regex) = time_format_map.get(time_format) {
         Ok(regex.to_string())
@@ -290,19 +294,24 @@ mod tests {
     fn test_time() {
         let mut result = time("hh:mm 12");
         match result {
-            Ok(s) => assert_eq!(s, "^(0?[1-9]|1[0-2]):[0-5][0-9]$"),
+            Ok(s) => assert_eq!(s, r"^(0?[1-9]|1[0-2]):[0-5][0-9]$"),
             Err(e) => panic!("{:#?}", e),
         }
 
         result = time("hh:mm am/pm");
         match result {
-            Ok(s) => assert_eq!(s, "^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$"),
+            Ok(s) => assert_eq!(s, r"^((1[0-2]|0?[1-9]):([0-5][0-9]) ?([AaPp][Mm]))$"),
             Err(e) => panic!("{:#?}", e),
         }
 
         result = time("hh:mm 24");
         match result {
-            Ok(s) => assert_eq!(s, "^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"),
+            Ok(s) => assert_eq!(s, r"^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        result = time("hh:mm:ss 24");
+        match result {
+            Ok(s) => assert_eq!(s, r"^(?:[01]\d|2[0123]):(?:[012345]\d):(?:[012345]\d)$"),
             Err(e) => panic!("{:#?}", e),
         }
     }
