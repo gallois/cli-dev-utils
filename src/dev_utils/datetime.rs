@@ -162,7 +162,7 @@ mod tests {
     fn epoch_to_rfc2822() {
         assert_eq!(
             convert("epoch", "rfc2822", "1"),
-            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+            Ok("Thu, 1 Jan 1970 00:00:01 +0000".to_string())
         );
     }
 
@@ -170,7 +170,7 @@ mod tests {
     fn unix_to_rfc2822() {
         assert_eq!(
             convert("unix", "rfc2822", "1"),
-            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+            Ok("Thu, 1 Jan 1970 00:00:01 +0000".to_string())
         );
     }
 
@@ -210,7 +210,7 @@ mod tests {
     fn test_iso8601_to_rfc2822() {
         assert_eq!(
             convert("iso8601", "rfc2822", "1970-01-01T00:00:01+00:00"),
-            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+            Ok("Thu, 1 Jan 1970 00:00:01 +0000".to_string())
         )
     }
 
@@ -218,7 +218,7 @@ mod tests {
     fn test_rfc3339_to_rfc2822() {
         assert_eq!(
             convert("rfc3339", "rfc2822", "1970-01-01T00:00:01+00:00"),
-            Ok("Thu, 01 Jan 1970 00:00:01 +0000".to_string())
+            Ok("Thu, 1 Jan 1970 00:00:01 +0000".to_string())
         )
     }
 }
