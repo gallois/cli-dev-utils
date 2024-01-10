@@ -42,6 +42,7 @@ pub enum Conversion {
     Lbs2Kgs,
     Kilos2Pounds,
     Kgs2Lbs,
+    Arabic2Roman,
 }
 
 #[derive(Debug)]
@@ -58,6 +59,9 @@ pub enum ConversionError {
     Hex2String(String),
     TemperatureConversion(String),
     AsciiBinary2Text(String),
+    DistanceConversion(String),
+    WeightConversion(String),
+    NumberConversion(String),
 }
 
 impl Display for ConversionError {
@@ -328,7 +332,7 @@ pub fn kilometers2miles(data: &str) -> Result<String, ConversionError> {
     let kilometers = match data.parse::<f64>() {
         Ok(v) => v,
         Err(_) => {
-            return Err(ConversionError::TemperatureConversion(format!(
+            return Err(ConversionError::DistanceConversion(format!(
                 "Cannot convert {} to a number",
                 data
             )))
@@ -342,7 +346,7 @@ pub fn miles2kilometers(data: &str) -> Result<String, ConversionError> {
     let miles = match data.parse::<f64>() {
         Ok(v) => v,
         Err(_) => {
-            return Err(ConversionError::TemperatureConversion(format!(
+            return Err(ConversionError::DistanceConversion(format!(
                 "Cannot convert {} to a number",
                 data
             )))
@@ -356,7 +360,7 @@ pub fn pounds2kilos(data: &str) -> Result<String, ConversionError> {
     let pounds = match data.parse::<f64>() {
         Ok(v) => v,
         Err(_) => {
-            return Err(ConversionError::TemperatureConversion(format!(
+            return Err(ConversionError::WeightConversion(format!(
                 "Cannot convert {} to a number",
                 data
             )))
@@ -370,7 +374,7 @@ pub fn kilos2pounds(data: &str) -> Result<String, ConversionError> {
     let kilos = match data.parse::<f64>() {
         Ok(v) => v,
         Err(_) => {
-            return Err(ConversionError::TemperatureConversion(format!(
+            return Err(ConversionError::WeightConversion(format!(
                 "Cannot convert {} to a number",
                 data
             )))
@@ -378,6 +382,32 @@ pub fn kilos2pounds(data: &str) -> Result<String, ConversionError> {
     };
     let result = kilos / 0.453592;
     Ok(result.to_string())
+}
+
+pub fn arabic2roman(data: &str) -> Result<String, ConversionError> {
+    let mut value = match data.parse::<i32>() {
+        Ok(v) => v,
+        Err(_) => {
+            return Err(ConversionError::NumberConversion(format!(
+                "Cannot convert {} to a number",
+                data
+            )))
+        }
+    };
+    let letters = [
+        "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I",
+    ];
+    let mut result: String = "".to_string();
+    let lookup_values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+    let mut i = 0;
+    while value >= 0 && i < lookup_values.len() as i32 {
+        while value >= lookup_values[i as usize] {
+            value -= lookup_values[i as usize];
+            result += letters[i as usize];
+        }
+        i += 1;
+    }
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -601,6 +631,105 @@ mod tests {
         match result {
             Ok(s) => assert_eq!(s, "2.2046244201837775"),
             Err(e) => panic!("{:#?}", e),
+        }
+    }
+
+    #[test]
+    fn test_arabic2roman() {
+        let result = arabic2roman("1");
+        match result {
+            Ok(s) => assert_eq!(s, "I"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("2");
+        match result {
+            Ok(s) => assert_eq!(s, "II"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("3");
+        match result {
+            Ok(s) => assert_eq!(s, "III"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("4");
+        match result {
+            Ok(s) => assert_eq!(s, "IV"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("5");
+        match result {
+            Ok(s) => assert_eq!(s, "V"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("6");
+        match result {
+            Ok(s) => assert_eq!(s, "VI"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("10");
+        match result {
+            Ok(s) => assert_eq!(s, "X"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("11");
+        match result {
+            Ok(s) => assert_eq!(s, "XI"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("20");
+        match result {
+            Ok(s) => assert_eq!(s, "XX"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("50");
+        match result {
+            Ok(s) => assert_eq!(s, "L"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("100");
+        match result {
+            Ok(s) => assert_eq!(s, "C"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("500");
+        match result {
+            Ok(s) => assert_eq!(s, "D"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("1000");
+        match result {
+            Ok(s) => assert_eq!(s, "M"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("3030");
+        match result {
+            Ok(s) => assert_eq!(s, "MMMXXX"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("3038");
+        match result {
+            Ok(s) => assert_eq!(s, "MMMXXXVIII"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("0");
+        match result {
+            Ok(s) => assert_eq!(s, ""),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("-1");
+        match result {
+            Ok(s) => assert_eq!(s, ""),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = arabic2roman("foo");
+        match result {
+            Ok(s) => panic!("{:#?}", s),
+            Err(e) => match e {
+                ConversionError::NumberConversion(s) => {
+                    assert_eq!(s, "Cannot convert foo to a number");
+                }
+                _ => panic!("{:#?}", e),
+            },
         }
     }
 }
