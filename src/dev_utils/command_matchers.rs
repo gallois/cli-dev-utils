@@ -191,6 +191,10 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
             Ok(data) => Ok(data),
             Err(e) => Err(CliError::ConversionError(e)),
         },
+        Conversion::Roman2Arabic => match dev_utils::convert::roman2arabic(content_str) {
+            Ok(data) => Ok(data),
+            Err(e) => Err(CliError::ConversionError(e)),
+        },
     }
 }
 

@@ -43,6 +43,7 @@ pub enum Conversion {
     Kilos2Pounds,
     Kgs2Lbs,
     Arabic2Roman,
+    Roman2Arabic,
 }
 
 #[derive(Debug)]
@@ -410,6 +411,41 @@ pub fn arabic2roman(data: &str) -> Result<String, ConversionError> {
     Ok(result)
 }
 
+pub fn roman2arabic(data: &str) -> Result<String, ConversionError> {
+    let mut result = 0;
+    let mut roman_numeral = data.to_string();
+    let letters = [
+        ("M", 1000),
+        ("CM", 900),
+        ("D", 500),
+        ("CD", 400),
+        ("C", 100),
+        ("XC", 90),
+        ("L", 50),
+        ("XL", 40),
+        ("X", 10),
+        ("IX", 9),
+        ("V", 5),
+        ("IV", 4),
+        ("I", 1),
+    ];
+    for (letter, value) in letters.iter() {
+        while roman_numeral.starts_with(letter) {
+            result += value;
+            #[allow(clippy::absurd_extreme_comparisons)]
+            if roman_numeral.len() - letter.len() <= 0 {
+                return Ok(result.to_string());
+            }
+            roman_numeral = roman_numeral[letter.len()..].to_string();
+        }
+    }
+    println!("e:{}", data);
+    Err(ConversionError::NumberConversion(format!(
+        "Cannot convert {} to a number",
+        data
+    )))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -727,6 +763,95 @@ mod tests {
             Err(e) => match e {
                 ConversionError::NumberConversion(s) => {
                     assert_eq!(s, "Cannot convert foo to a number");
+                }
+                _ => panic!("{:#?}", e),
+            },
+        }
+    }
+
+    #[test]
+    fn test_roman2arabic() {
+        let result = roman2arabic("I");
+        match result {
+            Ok(s) => assert_eq!(s, "1"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("II");
+        match result {
+            Ok(s) => assert_eq!(s, "2"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("III");
+        match result {
+            Ok(s) => assert_eq!(s, "3"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("IV");
+        match result {
+            Ok(s) => assert_eq!(s, "4"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("V");
+        match result {
+            Ok(s) => assert_eq!(s, "5"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("VI");
+        match result {
+            Ok(s) => assert_eq!(s, "6"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("X");
+        match result {
+            Ok(s) => assert_eq!(s, "10"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("XI");
+        match result {
+            Ok(s) => assert_eq!(s, "11"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("XX");
+        match result {
+            Ok(s) => assert_eq!(s, "20"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("L");
+        match result {
+            Ok(s) => assert_eq!(s, "50"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("C");
+        match result {
+            Ok(s) => assert_eq!(s, "100"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("D");
+        match result {
+            Ok(s) => assert_eq!(s, "500"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("M");
+        match result {
+            Ok(s) => assert_eq!(s, "1000"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("MMMXXX");
+        match result {
+            Ok(s) => assert_eq!(s, "3030"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("MMMXXXVIII");
+        match result {
+            Ok(s) => assert_eq!(s, "3038"),
+            Err(e) => panic!("{:#?}", e),
+        }
+        let result = roman2arabic("LMAOYOLOCOPTER");
+        match result {
+            Ok(s) => panic!("{:#?}", s),
+            Err(e) => match e {
+                ConversionError::NumberConversion(s) => {
+                    assert_eq!(s, "Cannot convert LMAOYOLOCOPTER to a number");
                 }
                 _ => panic!("{:#?}", e),
             },
