@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::{
     collections::HashMap,
     fmt::{Display, Formatter},
@@ -116,10 +117,9 @@ pub fn date(date_format: &str) -> Result<String, RegexError> {
         Ok(regex.to_string())
     } else {
         Err(RegexError::InvalidDateFormat(format!(
-            // FIXME improve display of valid formats
             "Invalid date format: {}. Valid formats: {:?}",
             date_format,
-            date_format_map.keys()
+            date_format_map.keys().join(", ")
         )))
     }
 }
@@ -141,10 +141,9 @@ pub fn time(time_format: &str) -> Result<String, RegexError> {
         Ok(regex.to_string())
     } else {
         Err(RegexError::InvalidTimeFormat(format!(
-            // FIXME improve display of valid formats
-            "Invalid time format: {}. Valid formats: {:?}",
+            "Invalid time format: {}. Valid formats: {}",
             time_format,
-            time_format_map.keys()
+            time_format_map.keys().join(", ")
         )))
     }
 }
