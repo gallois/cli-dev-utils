@@ -195,6 +195,9 @@ pub fn conversion(convert_args: ConversionArgs, cli_args: Cli) -> Result<String,
             Ok(data) => Ok(data),
             Err(e) => Err(CliError::ConversionError(e)),
         },
+        Conversion::ToOrdinal | Conversion::To_Ordinal => {
+            Ok(dev_utils::convert::to_ordinal(content_str))
+        }
     }
 }
 

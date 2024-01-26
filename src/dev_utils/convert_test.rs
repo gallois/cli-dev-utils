@@ -410,4 +410,21 @@ mod tests {
             },
         }
     }
+
+    #[test]
+    fn test_to_ordinal() {
+        assert_eq!(to_ordinal("1"), "1st");
+        assert_eq!(to_ordinal("2"), "2nd");
+        assert_eq!(to_ordinal("3"), "3rd");
+        assert_eq!(to_ordinal("4"), "4th");
+        assert_eq!(to_ordinal("10"), "10th");
+        assert_eq!(to_ordinal("0"), "0th");
+        assert_eq!(to_ordinal("-1"), "-1st");
+        assert_eq!(to_ordinal("0.1"), "0.1");
+        assert_eq!(to_ordinal("a"), "a");
+        assert_eq!(to_ordinal("10001"), "10001st");
+        assert_eq!(to_ordinal("10002"), "10002nd");
+        assert_eq!(to_ordinal("10003"), "10003rd");
+        assert_eq!(to_ordinal("10004"), "10004th");
+    }
 }

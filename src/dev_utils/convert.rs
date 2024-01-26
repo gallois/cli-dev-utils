@@ -20,6 +20,8 @@ pub enum Conversion {
     Hex2String,
     Text2Nato,
     Slugify,
+    // TODO find a way to list all patterns when printing out valid actions, e.g.
+    // #[strum(serialize = "celsius2fahrenheit", serialize = "c2f")]
     Celsius2Fahrenheit,
     C2F,
     Fahrenheit2Celsius,
@@ -44,6 +46,9 @@ pub enum Conversion {
     Kgs2Lbs,
     Arabic2Roman,
     Roman2Arabic,
+    ToOrdinal,
+    #[allow(non_camel_case_types)]
+    To_Ordinal,
 }
 
 #[derive(Debug)]
@@ -444,6 +449,10 @@ pub fn roman2arabic(data: &str) -> Result<String, ConversionError> {
         "Cannot convert {} to a number",
         data
     )))
+}
+
+pub fn to_ordinal(content: &str) -> String {
+    cruet::ordinalize(content)
 }
 
 #[cfg(test)]
